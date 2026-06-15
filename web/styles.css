@@ -9,7 +9,7 @@
   --sh-pop:0 8px 24px rgba(16,24,40,.12);
   --r-card:12px; --r-ctl:8px;
   --sb:240px; --topbar:52px;
-  --fs:'Plus Jakarta Sans',-apple-system,BlinkMacSystemFont,system-ui,sans-serif;
+  --fs:'Inter',-apple-system,BlinkMacSystemFont,system-ui,sans-serif;
   --fm:'JetBrains Mono',ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
 }
 * { box-sizing:border-box; }

@@ -1,0 +1,17 @@
+# Deploy only the static marketing site at the repo root.
+# Everything below is backend / tooling and is excluded from the Vercel build,
+# so Vercel sees no package.json and serves the site as pure static (no build step).
+functions/
+web/
+mcp/
+migrations/
+scripts/
+demo/
+node_modules/
+.insforge/
+.env
+.env*.local
+package.json
+package-lock.json
+insforge.toml
+README.md
