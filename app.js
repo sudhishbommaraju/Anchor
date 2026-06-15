@@ -135,6 +135,76 @@
     });
   });
 
+  /* ---- animated hero demo: generate key → terminal → live monitor (loops) ---- */
+  (function heroDemo(){
+    const root = document.getElementById('heroDemo');
+    if (!root) return;
+    const stage = root.querySelector('.demo-stage');
+    const scenes = [...root.querySelectorAll('.scene')];
+    const title = document.getElementById('dTitle');
+    const live = document.getElementById('dLive');
+    const dots = [...root.querySelectorAll('.dsteps .ds')];
+    const gen = document.getElementById('dGen'), key = document.getElementById('dKey');
+    const keyText = document.getElementById('dKeyText'), copy = document.getElementById('dCopy');
+    const copyLbl = document.getElementById('dCopyLbl'), cur = document.getElementById('dCursor');
+    const tl = [1, 2, 3, 4].map((i) => document.getElementById('tl' + i));
+    const stats = [...root.querySelectorAll('.hstats [data-c]')];
+    const rows = [...root.querySelectorAll('.s3tl .mrow')];
+    const KEY = 'anc_live_a3f0b9…c21d';
+    const w = (ms) => new Promise((r) => setTimeout(r, ms));
+    const setScene = (n) => { scenes.forEach((s) => s.classList.toggle('s-on', s.dataset.scene === String(n))); dots.forEach((d, i) => d.classList.toggle('on', i === n - 1)); };
+
+    if (reduce) { setScene(3); title.textContent = 'Mission · CLI Todo App'; live.hidden = false; stats.forEach((e) => e.textContent = Number(e.dataset.c).toLocaleString()); return; }
+
+    const baseRect = () => (cur.offsetParent || stage).getBoundingClientRect();
+    const rel = (el) => { const c = baseRect(), r = el.getBoundingClientRect(); return { x: r.left - c.left + r.width / 2 - 4, y: r.top - c.top + r.height / 2 - 2 }; };
+    const home = () => { const c = baseRect(); return { x: c.width - 46, y: c.height - 40 }; };
+    const move = (p, anim) => { cur.style.transition = anim ? 'transform .85s cubic-bezier(.5,0,.2,1),opacity .4s' : 'none'; cur.style.transform = 'translate(' + p.x + 'px,' + p.y + 'px)'; };
+    const type = async (el, text, sp) => { el.textContent = ''; for (let i = 0; i < text.length; i++) { el.textContent += text[i]; await w(sp); } };
+    const countUp = (el) => { const t = parseInt(el.dataset.c, 10), t0 = performance.now(), d = 1100; const tick = (n) => { const p = Math.min(1, (n - t0) / d), e = 1 - Math.pow(1 - p, 3); el.textContent = Math.round(t * e).toLocaleString(); if (p < 1) requestAnimationFrame(tick); }; requestAnimationFrame(tick); };
+
+    let alive = true;
+    const run = async () => {
+      while (alive) {
+        // SCENE 1 — generate key
+        title.textContent = 'New mission'; live.hidden = true; setScene(1);
+        key.classList.remove('show'); keyText.textContent = ''; copy.classList.remove('done'); copyLbl.textContent = 'copy';
+        move(home(), false); cur.style.opacity = '0';
+        await w(550); cur.style.opacity = '1';
+        move(rel(gen), true); await w(900);
+        gen.classList.add('press'); cur.classList.add('click'); await w(230); gen.classList.remove('press'); cur.classList.remove('click');
+        key.classList.add('show'); await w(220);
+        await type(keyText, KEY, 30);
+        await w(320);
+        move(rel(copy), true); await w(700);
+        cur.classList.add('click'); await w(220); cur.classList.remove('click');
+        copy.classList.add('done'); copyLbl.textContent = 'copied';
+        await w(950);
+        // SCENE 2 — terminal
+        title.textContent = 'Terminal'; setScene(2); cur.style.opacity = '0';
+        tl.forEach((e) => { e.textContent = ''; e.classList.remove('caret'); e.style.opacity = ''; });
+        await w(320);
+        await type(tl[0], '$ export ANTHROPIC_BASE_URL="…insforge.app/anchor"', 14);
+        await type(tl[1], '$ export ANTHROPIC_AUTH_TOKEN="' + KEY + '"', 14);
+        await type(tl[2], '$ claude', 42); tl[2].classList.add('caret');
+        await w(800);
+        tl[2].classList.remove('caret'); tl[3].style.opacity = '1'; tl[3].textContent = '✓ mission injected — re-anchored on every call';
+        await w(1600);
+        // SCENE 3 — live monitor
+        title.textContent = 'Mission · CLI Todo App'; live.hidden = false; setScene(3);
+        stats.forEach((e) => e.textContent = '0');
+        rows.forEach((r) => { r.style.opacity = '0'; r.style.transform = 'translateY(8px)'; r.style.transition = 'opacity .4s var(--e-out),transform .4s var(--e-out)'; });
+        stats.forEach(countUp);
+        rows.forEach((r, i) => setTimeout(() => { r.style.opacity = ''; r.style.transform = ''; }, 250 + i * 240));
+        await w(3400);
+      }
+    };
+    if ('IntersectionObserver' in window) {
+      const io = new IntersectionObserver((es, obs) => es.forEach((e) => { if (e.isIntersecting) { run(); obs.disconnect(); } }), { threshold: 0.25 });
+      io.observe(root);
+    } else { run(); }
+  })();
+
   /* ---- tabs ---- */
   const tabs = [...document.querySelectorAll('.tab')], panes = [...document.querySelectorAll('.code-pane')];
   tabs.forEach((tab) => tab.addEventListener('click', () => {

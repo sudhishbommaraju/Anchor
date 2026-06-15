@@ -29,6 +29,8 @@
   <symbol id="i-layers" viewBox="0 0 24 24"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></symbol>
   <symbol id="i-target" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></symbol>
   <symbol id="i-key" viewBox="0 0 24 24"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/></symbol>
+  <symbol id="i-copy" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></symbol>
+  <symbol id="i-pointer" viewBox="0 0 20 20"><path d="M3 2l13 6.3-5.1 1.5L8 16 3 2z" fill="#17181c" stroke="#fff" stroke-width="1.2" stroke-linejoin="round"/></symbol>
   <symbol id="i-activity" viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></symbol>
   <symbol id="i-wallet" viewBox="0 0 24 24"><path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"/><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"/><path d="M18 12a2 2 0 0 0 0 4h4v-4Z"/></symbol>
   <symbol id="i-menu" viewBox="0 0 24 24"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></symbol>
@@ -73,39 +75,49 @@
       <p class="hero-note reveal" data-reveal-delay="280">Free to start · one base-URL swap · never breaks your agent</p>
     </div>
 
-    <!-- product showcase (light monitor infographic) -->
-    <div class="showcase reveal" data-reveal-delay="320" aria-hidden="true">
-      <div class="mock hmon">
-        <div class="mock-bar">
+    <!-- animated product demo: generate key → terminal → live monitor (loops ~10s) -->
+    <div class="showcase reveal" data-reveal-delay="320">
+      <div class="mock demo" id="heroDemo" aria-label="Anchor in action: create a mission, generate a key, plug it into your terminal, watch it work.">
+        <div class="demo-chrome">
           <span class="t"><i></i><i></i><i></i></span>
-          <span class="mtit"><svg aria-hidden="true"><use href="#i-anchor"/></svg> Mission · CLI Todo App<span class="hbadge">active</span></span>
-          <span class="mock-live"><span class="dot"></span>live</span>
+          <span class="mtit"><svg aria-hidden="true"><use href="#i-anchor"/></svg> <span id="dTitle">New mission</span></span>
+          <span class="dsteps" aria-hidden="true"><i class="ds on"></i><i class="ds"></i><i class="ds"></i></span>
+          <span class="mock-live" id="dLive" hidden><span class="dot"></span>live</span>
         </div>
-        <div class="hstats">
-          <div><div class="n">5,934</div><div class="l">Tokens in</div></div>
-          <div><div class="n">1,372</div><div class="l">Tokens out</div></div>
-          <div><div class="n">$0.0019</div><div class="l">Cost</div></div>
-          <div><div class="n amber">2</div><div class="l">Loops</div></div>
-          <div><div class="n violet">1</div><div class="l">Drifts</div></div>
-          <div><div class="n acc">3</div><div class="l">Interventions</div></div>
-        </div>
-        <div class="hbody">
-          <div>
-            <div class="hsec-h">Live memory</div>
-            <p class="hmem-s">The agent built add / list / done and is wiring JSON persistence. Next: handle an empty <span class="fm">todos.json</span> without crashing.</p>
-            <div class="mi"><span class="mb mb-progress">progress</span> JSON persistence wired to todos.json</div>
-            <div class="mi"><span class="mb mb-de">dead-end</span> retried the same JSONDecodeError fix — re-grounded</div>
-            <div class="mi"><span class="mb mb-fact">fact</span> tasks persist as a JSON array of objects</div>
-            <div class="mi"><span class="mb mb-todo">todo</span> add the done(index) command</div>
+        <div class="demo-stage">
+          <!-- SCENE 1 · create mission + generate key -->
+          <div class="scene s-on" data-scene="1">
+            <div class="hsec-h">Goal</div>
+            <div class="s1-goal">Build a CLI todo app in Python with add / list / done</div>
+            <div class="s1-chips"><span>std-lib only</span><span>persist to todos.json</span></div>
+            <button class="s1-gen" id="dGen" type="button">Generate API key</button>
+            <div class="s1-key" id="dKey"><span class="kdot"></span><span class="fm" id="dKeyText"></span><span class="s1-copy" id="dCopy"><svg aria-hidden="true"><use href="#i-copy"/></svg><span id="dCopyLbl">copy</span></span></div>
+            <div class="dcursor" id="dCursor"><svg viewBox="0 0 20 20"><use href="#i-pointer"/></svg></div>
           </div>
-          <div>
-            <div class="hsec-h">Step timeline</div>
-            <div class="mtl">
+          <!-- SCENE 2 · plug into terminal -->
+          <div class="scene" data-scene="2">
+            <div class="term">
+              <div class="tln" id="tl1"></div>
+              <div class="tln" id="tl2"></div>
+              <div class="tln" id="tl3"></div>
+              <div class="tln okline" id="tl4"></div>
+            </div>
+          </div>
+          <!-- SCENE 3 · live monitor -->
+          <div class="scene" data-scene="3">
+            <div class="hstats">
+              <div><div class="n" data-c="5934">0</div><div class="l">Tokens in</div></div>
+              <div><div class="n" data-c="1372">0</div><div class="l">Tokens out</div></div>
+              <div><div class="n">$0.0019</div><div class="l">Cost</div></div>
+              <div><div class="n amber" data-c="2">0</div><div class="l">Loops</div></div>
+              <div><div class="n violet" data-c="1">0</div><div class="l">Drifts</div></div>
+              <div><div class="n acc" data-c="3">0</div><div class="l">Interventions</div></div>
+            </div>
+            <div class="mtl s3tl">
               <div class="mrow"><span class="seq">#07</span><span class="tag ok">on track</span><span class="tx">write the list command</span></div>
               <div class="mrow"><span class="seq">#09</span><span class="tag loop">loop 100%</span><span class="tx">repeat: fix JSONDecodeError</span></div>
               <div class="mrow"><span class="seq">#10</span><span class="tag anchor"><svg aria-hidden="true"><use href="#i-anchor"/></svg> stepped in</span><span class="tx">re-grounded</span></div>
               <div class="mrow"><span class="seq">#13</span><span class="tag drift">drift</span><span class="tx">"best pizza toppings?"</span></div>
-              <div class="mrow"><span class="seq">#14</span><span class="tag ok">on track</span><span class="tx">add the done() command</span></div>
             </div>
           </div>
         </div>
