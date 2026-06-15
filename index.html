@@ -72,6 +72,46 @@
       </div>
       <p class="hero-note reveal" data-reveal-delay="280">Free to start · one base-URL swap · never breaks your agent</p>
     </div>
+
+    <!-- product showcase (light monitor infographic) -->
+    <div class="showcase reveal" data-reveal-delay="320" aria-hidden="true">
+      <div class="mock hmon">
+        <div class="mock-bar">
+          <span class="t"><i></i><i></i><i></i></span>
+          <span class="mtit"><svg aria-hidden="true"><use href="#i-anchor"/></svg> Mission · CLI Todo App<span class="hbadge">active</span></span>
+          <span class="mock-live"><span class="dot"></span>live</span>
+        </div>
+        <div class="hstats">
+          <div><div class="n">5,934</div><div class="l">Tokens in</div></div>
+          <div><div class="n">1,372</div><div class="l">Tokens out</div></div>
+          <div><div class="n">$0.0019</div><div class="l">Cost</div></div>
+          <div><div class="n amber">2</div><div class="l">Loops</div></div>
+          <div><div class="n violet">1</div><div class="l">Drifts</div></div>
+          <div><div class="n acc">3</div><div class="l">Interventions</div></div>
+        </div>
+        <div class="hbody">
+          <div>
+            <div class="hsec-h">Live memory</div>
+            <p class="hmem-s">The agent built add / list / done and is wiring JSON persistence. Next: handle an empty <span class="fm">todos.json</span> without crashing.</p>
+            <div class="mi"><span class="mb mb-progress">progress</span> JSON persistence wired to todos.json</div>
+            <div class="mi"><span class="mb mb-de">dead-end</span> retried the same JSONDecodeError fix — re-grounded</div>
+            <div class="mi"><span class="mb mb-fact">fact</span> tasks persist as a JSON array of objects</div>
+            <div class="mi"><span class="mb mb-todo">todo</span> add the done(index) command</div>
+          </div>
+          <div>
+            <div class="hsec-h">Step timeline</div>
+            <div class="mtl">
+              <div class="mrow"><span class="seq">#07</span><span class="tag ok">on track</span><span class="tx">write the list command</span></div>
+              <div class="mrow"><span class="seq">#09</span><span class="tag loop">loop 100%</span><span class="tx">repeat: fix JSONDecodeError</span></div>
+              <div class="mrow"><span class="seq">#10</span><span class="tag anchor"><svg aria-hidden="true"><use href="#i-anchor"/></svg> stepped in</span><span class="tx">re-grounded</span></div>
+              <div class="mrow"><span class="seq">#13</span><span class="tag drift">drift</span><span class="tx">"best pizza toppings?"</span></div>
+              <div class="mrow"><span class="seq">#14</span><span class="tag ok">on track</span><span class="tx">add the done() command</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <div class="compat reveal" data-reveal-delay="340">
       <span class="lab">Drops into</span>
       <ul><li>Claude Code</li><li>Cursor</li><li>OpenAI SDK</li><li>Anthropic SDK</li><li>MCP</li><li>any REST client</li></ul>
