@@ -52,7 +52,7 @@ const CORS = {
   'Access-Control-Allow-Methods': 'GET, POST, PATCH, DELETE, OPTIONS',
   'Access-Control-Allow-Headers':
     'authorization, x-api-key, content-type, anthropic-version, openai-organization, x-anchor-key',
-  'Access-Control-Expose-Headers': 'x-anchor-loop, x-anchor-drift, x-anchor-intervened, x-anchor-mission',
+  'Access-Control-Expose-Headers': 'x-anchor-loop, x-anchor-drift, x-anchor-intervened, x-anchor-mission, x-anchor-overhead-ms, server-timing',
 };
 
 // ───────────────────────────── small helpers ─────────────────────────────
@@ -201,6 +201,7 @@ type Mission = {
   status: string;
   memory_summary: string;
   options: Record<string, unknown>;
+  _apiKeyId?: string; // resolving API key id (in-memory only) — for per-key usage attribution
 };
 
 async function resolveMissionFromKey(key: string, touch = false): Promise<Mission | null> {
@@ -209,7 +210,7 @@ async function resolveMissionFromKey(key: string, touch = false): Promise<Missio
   const db = admin();
   const { data: keyRow } = await db
     .from('api_keys')
-    .select('mission_id, revoked')
+    .select('id, mission_id, revoked')
     .eq('key_hash', hash)
     .eq('revoked', false)
     .maybeSingle();
@@ -223,6 +224,7 @@ async function resolveMissionFromKey(key: string, touch = false): Promise<Missio
     // fire-and-forget usage bump (only on /v1/* calls, not control-plane reads)
     db.rpc('anchor_touch_key', { p_hash: hash }).then(() => {}, () => {});
   }
+  if (mission) (mission as Mission)._apiKeyId = (keyRow as { id: string }).id;
   return (mission as Mission) ?? null;
 }
 
@@ -495,6 +497,7 @@ async function postProcess(opts: {
 
     const reqStep = {
       mission_id: mission.id,
+      api_key_id: mission._apiKeyId ?? null,
       seq: reqSeq,
       role: 'agent_request',
       content: truncate(incomingText, MAX_STORE_CHARS),
@@ -523,6 +526,7 @@ async function postProcess(opts: {
 
     const respStep = {
       mission_id: mission.id,
+      api_key_id: mission._apiKeyId ?? null,
       seq: respSeq,
       role: 'model_response',
       content: truncate(responseText, MAX_STORE_CHARS),
@@ -669,49 +673,54 @@ function safeJson(s: string): { summary?: string; items?: unknown[] } | null {
 
 // Run the full anchoring pass over OpenAI-format messages: detect loop/drift and
 // build the fresh BOUNDED system block. Best-effort — any failure yields an empty block.
+type PrepTiming = { embedMs: number; detectMs: number; retrieveMs: number };
 async function anchorPrepare(
   mission: Mission,
   opts: typeof DEFAULT_OPTIONS,
   oaMessages: Msg[],
-): Promise<{ incomingText: string; incomingEmbedding: number[] | null; det: Detection; intervened: boolean; block: string }> {
+): Promise<{ incomingText: string; incomingEmbedding: number[] | null; det: Detection; intervened: boolean; block: string; timing: PrepTiming }> {
+  const timing: PrepTiming = { embedMs: 0, detectMs: 0, retrieveMs: 0 };
   try {
     const incomingText = extractIncomingAction(oaMessages);
+    let t = Date.now();
     const incomingEmbedding = await embed(incomingText);
-    let det = EMPTY_DETECTION;
-    if (incomingEmbedding) det = await detect(mission.id, incomingEmbedding, opts);
-    const intervened = !!opts.autoCorrect && (det.loop || det.drift);
-    const [memItems, planStep] = await Promise.all([
+    timing.embedMs = Date.now() - t;
+    // detect and retrieval both depend only on the embedding (not on each other),
+    // so overlap them — the preflight total reflects max(detect, retrieve), not the sum.
+    const t1 = Date.now();
+    const detP = (incomingEmbedding ? detect(mission.id, incomingEmbedding, opts) : Promise.resolve(EMPTY_DETECTION))
+      .then((r) => { timing.detectMs = Date.now() - t1; return r; });
+    const retrP = Promise.all([
       fetchInjectionMemory(mission.id, incomingEmbedding),
       opts.sequencing ? activePlanStep(mission.id) : Promise.resolve(null),
-    ]);
+    ]).then((r) => { timing.retrieveMs = Date.now() - t1; return r; });
+    const [det, [memItems, planStep]] = await Promise.all([detP, retrP]);
+    const intervened = !!opts.autoCorrect && (det.loop || det.drift);
     const block = buildInjectedBlock(mission, mission.memory_summary, memItems, planStep, det, !!opts.autoCorrect, Number(opts.injectionTokenBudget) || 1000);
-    return { incomingText, incomingEmbedding, det, intervened, block };
+    return { incomingText, incomingEmbedding, det, intervened, block, timing };
   } catch (_e) {
-    return { incomingText: '', incomingEmbedding: null, det: EMPTY_DETECTION, intervened: false, block: '' };
+    return { incomingText: '', incomingEmbedding: null, det: EMPTY_DETECTION, intervened: false, block: '', timing };
   }
 }
 
 // ───────────────────────────── the proxy ─────────────────────────────
 
 async function handleChatCompletions(req: Request): Promise<Response> {
+  const tEntry = Date.now();
   const key = bearer(req);
   if (!key) return oaiError('Missing API key. Pass your Anchor key as the bearer token.', 401, 'authentication_error');
 
-  let mission: Mission | null;
-  try {
-    mission = await resolveMissionFromKey(key, true);
-  } catch (_e) {
-    mission = null;
-  }
+  // Resolve key, check rate limit, and parse the body concurrently — all independent,
+  // so the slowest one (mission resolve) sets the floor instead of the sum.
+  const [mission, rl, parsed] = await Promise.all([
+    resolveMissionFromKey(key, true).catch(() => null),
+    rateLimited(req, key),
+    req.json().then((b) => b as Record<string, unknown>).catch(() => null),
+  ]);
   if (!mission) return oaiError('Invalid or revoked Anchor API key.', 401, 'authentication_error');
-  const rl = await rateLimited(req, key); if (rl) return rl;
-
-  let body: Record<string, unknown>;
-  try {
-    body = await req.json();
-  } catch {
-    return oaiError('Request body must be valid JSON.', 400);
-  }
+  if (rl) return rl;
+  if (!parsed) return oaiError('Request body must be valid JSON.', 400);
+  const body: Record<string, unknown> = parsed;
 
   const opts = mergedOptions(mission);
   const messages = (Array.isArray(body.messages) ? body.messages : []) as Msg[];
@@ -741,11 +750,17 @@ async function handleChatCompletions(req: Request): Promise<Response> {
     outBody.stream_options = { ...so, include_usage: true };
   }
 
+  // Preflight overhead = everything Anchor adds before the upstream model call starts
+  // streaming (key resolve + rate-limit + embed + detect + retrieval + block build).
+  const overheadMs = Date.now() - tEntry;
+  const tm = prep.timing;
   const flagHeaders: Record<string, string> = {
     'x-anchor-mission': mission.id,
     'x-anchor-loop': String(det.loop),
     'x-anchor-drift': String(det.drift),
     'x-anchor-intervened': String(intervened),
+    'x-anchor-overhead-ms': String(overheadMs),
+    'server-timing': `anchor;dur=${overheadMs};desc="preflight", embed;dur=${tm.embedMs}, detect;dur=${tm.detectMs}, retrieve;dur=${tm.retrieveMs}`,
   };
 
   let upstream: Response;
