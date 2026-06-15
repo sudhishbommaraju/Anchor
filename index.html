@@ -6,7 +6,7 @@
 <title>Anchor — Set the mission once. Keep your agent on it.</title>
 <meta name="description" content="Anchor is a drop-in proxy that keeps AI coding agents on task. It re-injects your mission and a living memory on every model call, catches loops and drift with pgvector, and logs every token." />
 <meta name="color-scheme" content="light" />
-<meta name="theme-color" content="#fcfbf9" />
+<meta name="theme-color" content="#F5F6F8" />
 <meta property="og:type" content="website" />
 <meta property="og:title" content="Anchor — Keep your AI coding agents on task" />
 <meta property="og:description" content="Set the mission once. Anchor re-injects it on every model call, catches loops and drift, and logs every token." />
@@ -14,10 +14,10 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link rel="preconnect" href="https://api.fontshare.com" crossorigin />
 <link rel="preconnect" href="https://cdn.fontshare.com" crossorigin />
-<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@500;600;700;800;900&family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
 <link href="https://api.fontshare.com/v2/css?f[]=satoshi@400,500,600,700&display=swap" rel="stylesheet" />
 <link rel="stylesheet" href="styles.css" />
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%235e6ad2' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='5' r='3'/%3E%3Cline x1='12' y1='22' x2='12' y2='8'/%3E%3Cpath d='M5 12H2a10 10 0 0 0 20 0h-3'/%3E%3C/svg%3E" />
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%232D7FF9' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='5' r='3'/%3E%3Cline x1='12' y1='22' x2='12' y2='8'/%3E%3Cpath d='M5 12H2a10 10 0 0 0 20 0h-3'/%3E%3C/svg%3E" />
 </head>
 <body>
 
@@ -61,70 +61,65 @@
 <main id="main">
   <!-- HERO -->
   <section class="hero">
-    <div class="hero-bg" aria-hidden="true"></div>
-    <svg class="hero-deco l" viewBox="0 0 200 600" fill="none" aria-hidden="true" preserveAspectRatio="xMidYMid slice"><path d="M40 0 v600 M40 40 q60 20 70 80 M40 160 q70 24 78 92 M40 300 q64 22 74 86 M40 440 q60 20 70 80" stroke="currentColor" stroke-width="2"/><circle cx="110" cy="120" r="5" fill="currentColor"/><circle cx="118" cy="252" r="5" fill="currentColor"/><circle cx="114" cy="386" r="5" fill="currentColor"/></svg>
-    <svg class="hero-deco r" viewBox="0 0 200 600" fill="none" aria-hidden="true" preserveAspectRatio="xMidYMid slice"><path d="M40 0 v600 M40 40 q60 20 70 80 M40 160 q70 24 78 92 M40 300 q64 22 74 86 M40 440 q60 20 70 80" stroke="currentColor" stroke-width="2"/><circle cx="110" cy="120" r="5" fill="currentColor"/><circle cx="118" cy="252" r="5" fill="currentColor"/><circle cx="114" cy="386" r="5" fill="currentColor"/></svg>
+    <!-- ONE subtle monochrome depth element: a faint masked hairline grid, NO color -->
+    <div class="hero-grid" aria-hidden="true"></div>
+
     <div class="hero-inner">
-      <span class="pill reveal"><span class="dot"></span> Built on <b>InsForge</b></span>
-      <h1 class="reveal" data-reveal-delay="60">Agents drift, loop, and forget.<br><span class="grad">Anchor keeps them on mission.</span></h1>
-      <p class="lead reveal" data-reveal-delay="140">Anchor re-injects your mission and a living memory into your AI coding agent on every model call — catching loops and drift, and logging every token, across your whole stack.</p>
-      <div class="hero-actions reveal" data-reveal-delay="220">
-        <a class="btn lg" data-cta="signup" href="#">Sign up <svg aria-hidden="true"><use href="#i-arrow"/></svg></a>
-        <a class="btn ghost lg" data-cta="login" href="#">Sign in</a>
-      </div>
-      <p class="hero-note reveal" data-reveal-delay="280">Free to start · one base-URL swap · never breaks your agent</p>
-    </div>
-
-    <!-- animated product demo: generate key → terminal → live monitor (loops ~10s) -->
-    <div class="showcase reveal" data-reveal-delay="320">
-      <div class="mock demo" id="heroDemo" aria-label="Anchor in action: create a mission, generate a key, plug it into your terminal, watch it work.">
-        <div class="demo-chrome">
-          <span class="t"><i></i><i></i><i></i></span>
-          <span class="mtit"><svg aria-hidden="true"><use href="#i-anchor"/></svg> <span id="dTitle">New mission</span></span>
-          <span class="dsteps" aria-hidden="true"><i class="ds on"></i><i class="ds"></i><i class="ds"></i></span>
-          <span class="mock-live" id="dLive" hidden><span class="dot"></span>live</span>
+      <!-- LEFT: text column -->
+      <div class="hero-copy">
+        <span class="pill reveal"><span class="dot"></span> Built on <b>InsForge</b></span>
+        <h1 class="reveal" data-reveal-delay="60">Stop re-prompting your agent. <span class="acc">Anchor drives it to a verified finish.</span></h1>
+        <p class="lead reveal" data-reveal-delay="120">Anchor re-injects your mission and a living memory on every step, catches loops and drift, and keeps the agent going until your verification check passes — so you stop babysitting it.</p>
+        <div class="hero-actions reveal" data-reveal-delay="180">
+          <a class="btn lg" data-cta="signup" href="#">Sign up <svg aria-hidden="true"><use href="#i-arrow"/></svg></a>
+          <a class="btn ghost lg" data-cta="login" href="#">Sign in</a>
         </div>
-        <div class="demo-stage">
-          <!-- SCENE 1 · create mission + generate key -->
-          <div class="scene s-on" data-scene="1">
-            <div class="hsec-h">Goal</div>
-            <div class="s1-goal">Build a CLI todo app in Python with add / list / done</div>
-            <div class="s1-chips"><span>std-lib only</span><span>persist to todos.json</span></div>
-            <button class="s1-gen" id="dGen" type="button">Generate API key</button>
-            <div class="s1-key" id="dKey"><span class="kdot"></span><span class="fm" id="dKeyText"></span><span class="s1-copy" id="dCopy"><svg aria-hidden="true"><use href="#i-copy"/></svg><span id="dCopyLbl">copy</span></span></div>
-            <div class="dcursor" id="dCursor"><svg viewBox="0 0 20 20"><use href="#i-pointer"/></svg></div>
+        <p class="hero-note reveal" data-reveal-delay="240">First 3 missions free · one base-URL swap · verified or it keeps going</p>
+      </div>
+
+      <!-- RIGHT: faithful Anchor Monitor replica, bleeding gently off the right edge -->
+      <div class="hero-frame reveal" data-reveal-delay="200">
+        <div class="mock monitor" aria-label="The Anchor Monitor: a live mission timeline, a living memory panel, and a verified-complete result.">
+          <div class="mock-bar">
+            <span class="t"><i></i><i></i><i></i></span>
+            <span class="mock-title"><svg aria-hidden="true"><use href="#i-anchor"/></svg> Mission · CLI Todo App</span>
+            <span class="mock-live"><span class="dot"></span>live</span>
           </div>
-          <!-- SCENE 2 · plug into terminal -->
-          <div class="scene" data-scene="2">
-            <div class="term">
-              <div class="tln" id="tl1"></div>
-              <div class="tln" id="tl2"></div>
-              <div class="tln" id="tl3"></div>
-              <div class="tln okline" id="tl4"></div>
-            </div>
+
+          <div class="mstats m6">
+            <div><div class="n">5,934</div><div class="l">Tokens in</div></div>
+            <div><div class="n">1,372</div><div class="l">Tokens out</div></div>
+            <div><div class="n">$0.0019</div><div class="l">Cost</div></div>
+            <div><div class="n">2</div><div class="l">Loops</div></div>
+            <div><div class="n">1</div><div class="l">Drifts</div></div>
+            <div><div class="n acc">3</div><div class="l">Interventions</div></div>
           </div>
-          <!-- SCENE 3 · live monitor -->
-          <div class="scene" data-scene="3">
-            <div class="hstats">
-              <div><div class="n" data-c="5934">0</div><div class="l">Tokens in</div></div>
-              <div><div class="n" data-c="1372">0</div><div class="l">Tokens out</div></div>
-              <div><div class="n">$0.0019</div><div class="l">Cost</div></div>
-              <div><div class="n amber" data-c="2">0</div><div class="l">Loops</div></div>
-              <div><div class="n violet" data-c="1">0</div><div class="l">Drifts</div></div>
-              <div><div class="n acc" data-c="3">0</div><div class="l">Interventions</div></div>
-            </div>
-            <div class="mtl s3tl">
-              <div class="mrow"><span class="seq">#07</span><span class="tag ok">on track</span><span class="tx">write the list command</span></div>
-              <div class="mrow"><span class="seq">#09</span><span class="tag loop">loop 100%</span><span class="tx">repeat: fix JSONDecodeError</span></div>
-              <div class="mrow"><span class="seq">#10</span><span class="tag anchor"><svg aria-hidden="true"><use href="#i-anchor"/></svg> stepped in</span><span class="tx">re-grounded</span></div>
-              <div class="mrow"><span class="seq">#13</span><span class="tag drift">drift</span><span class="tx">"best pizza toppings?"</span></div>
-            </div>
+
+          <div class="mtl monitor-tl">
+            <div class="mrow"><span class="seq">#07</span><span class="tag ok">on track</span><span class="tx">write the list command</span></div>
+            <div class="mrow"><span class="seq">#09</span><span class="tag loop">loop 100%</span><span class="tx">repeat: fix JSONDecodeError</span></div>
+            <div class="mrow hl"><span class="seq">#10</span><span class="tag anchor"><svg aria-hidden="true"><use href="#i-anchor"/></svg> stepped in</span><span class="tx">re-grounded on the mission</span></div>
+            <div class="mrow"><span class="seq">#13</span><span class="tag drift">drift</span><span class="tx">&ldquo;best pizza toppings?&rdquo;</span></div>
+            <div class="mrow"><span class="seq">#14</span><span class="tag ok">on track</span><span class="tx">add the done() command</span></div>
+          </div>
+
+          <div class="monitor-mem">
+            <div class="hsec-h">Live memory</div>
+            <div class="mi"><span class="mb mb-progress">progress</span><span>add / list / done implemented · persists to <span class="fm">todos.json</span></span></div>
+            <div class="mi"><span class="mb mb-fact">fact</span><span>std-lib only — argparse + json</span></div>
+            <div class="mi"><span class="mb mb-de">dead-end</span><span>manual JSON parse → use <span class="fm">json.load</span></span></div>
+          </div>
+
+          <div class="monitor-done">
+            <span class="vdot"><svg aria-hidden="true"><use href="#i-check"/></svg></span>
+            <span class="vtx"><b>Verified complete</b> — mission passed its check (3/3 assertions)</span>
+            <span class="vstep fm">#16</span>
           </div>
         </div>
       </div>
     </div>
 
-    <div class="compat reveal" data-reveal-delay="340">
+    <div class="compat reveal" data-reveal-delay="300">
       <span class="lab">Drops into</span>
       <ul><li>Claude Code</li><li>Cursor</li><li>OpenAI SDK</li><li>Anthropic SDK</li><li>MCP</li><li>any REST client</li></ul>
     </div>
@@ -159,10 +154,52 @@
   <section class="section">
     <div class="wrap">
       <div class="sec-head center reveal"><h2>Three jobs, handled.</h2><p class="sub">The loudest agent complaints — looping, losing context, burning tokens — solved on every call.</p></div>
-      <div class="cards-feat">
-        <article class="fcard reveal"><span class="ic"><svg aria-hidden="true"><use href="#i-layers"/></svg></span><h3>Re-grounds the agent</h3><p>Mission + a deduped, living memory re-injected as a fresh system block every model call.</p><a href="product.html" style="display:inline-flex;align-items:center;gap:6px;margin-top:14px;color:var(--accent);font-family:var(--fb);font-weight:600;font-size:14px">See the product <svg aria-hidden="true" style="width:15px;height:15px"><use href="#i-arrow"/></svg></a></article>
-        <article class="fcard reveal" data-reveal-delay="80"><span class="ic"><svg aria-hidden="true"><use href="#i-target"/></svg></span><h3>Catches loops &amp; drift</h3><p>pgvector similarity flags repeats and tangents, then injects a corrective in real time.</p><a href="why.html" style="display:inline-flex;align-items:center;gap:6px;margin-top:14px;color:var(--accent);font-family:var(--fb);font-weight:600;font-size:14px">Why it matters <svg aria-hidden="true" style="width:15px;height:15px"><use href="#i-arrow"/></svg></a></article>
-        <article class="fcard reveal" data-reveal-delay="160"><span class="ic"><svg aria-hidden="true"><use href="#i-wallet"/></svg></span><h3>Logs every token</h3><p>Each step, where it looped, and the exact token and dollar cost — visible per mission.</p><a href="features.html" style="display:inline-flex;align-items:center;gap:6px;margin-top:14px;color:var(--accent);font-family:var(--fb);font-weight:600;font-size:14px">All features <svg aria-hidden="true" style="width:15px;height:15px"><use href="#i-arrow"/></svg></a></article>
+      <div class="afcards">
+        <a class="afcard afc-blue reveal" href="product.html">
+          <span class="afc-index">001</span>
+          <div class="afc-art"><svg class="afc-img" viewBox="0 0 128 128" fill="none" aria-hidden="true">
+            <circle cx="64" cy="64" r="56" stroke="currentColor" stroke-width="2" opacity=".14"/>
+            <circle cx="64" cy="64" r="42" stroke="currentColor" stroke-width="2" opacity=".26"/>
+            <circle cx="64" cy="64" r="30" fill="currentColor" opacity=".1"/>
+            <g stroke="currentColor" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"><circle cx="64" cy="44" r="7"/><line x1="64" y1="51" x2="64" y2="92"/><path d="M44 70 H36 a28 28 0 0 0 56 0 h-8"/></g>
+          </svg></div>
+          <div class="afc-body">
+            <span class="afc-tag">ON MISSION</span>
+            <p class="afc-title">Re-grounds the agent — mission + a deduped, living memory re-injected as a fresh system block on every model call.</p>
+            <span class="afc-more">See the product <svg aria-hidden="true"><use href="#i-arrow"/></svg></span>
+          </div>
+        </a>
+        <a class="afcard afc-amber reveal" data-reveal-delay="80" href="why.html">
+          <span class="afc-index">002</span>
+          <div class="afc-art"><svg class="afc-img" viewBox="0 0 128 128" fill="none" aria-hidden="true">
+            <circle cx="58" cy="70" r="34" stroke="currentColor" stroke-width="3" opacity=".22"/>
+            <circle cx="58" cy="70" r="20" stroke="currentColor" stroke-width="3" opacity=".42"/>
+            <circle cx="58" cy="70" r="8" fill="currentColor"/>
+            <path d="M98 58 a42 42 0 1 0 2 32" stroke="currentColor" stroke-width="4" stroke-linecap="round" fill="none" opacity=".9"/>
+            <polyline points="88 46 99 58 105 44" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg></div>
+          <div class="afc-body">
+            <span class="afc-tag">LOOP &amp; DRIFT</span>
+            <p class="afc-title">Catches loops &amp; drift — pgvector similarity flags repeats and tangents, then injects a corrective in real time.</p>
+            <span class="afc-more">Why it matters <svg aria-hidden="true"><use href="#i-arrow"/></svg></span>
+          </div>
+        </a>
+        <a class="afcard afc-teal reveal" data-reveal-delay="160" href="features.html">
+          <span class="afc-index">003</span>
+          <div class="afc-art"><svg class="afc-img" viewBox="0 0 128 128" fill="none" aria-hidden="true">
+            <line x1="26" y1="96" x2="100" y2="96" stroke="currentColor" stroke-width="2" opacity=".25"/>
+            <rect x="30" y="72" width="14" height="24" rx="3" fill="currentColor" opacity=".22"/>
+            <rect x="50" y="60" width="14" height="36" rx="3" fill="currentColor" opacity=".38"/>
+            <rect x="70" y="46" width="14" height="50" rx="3" fill="currentColor" opacity=".55"/>
+            <circle cx="94" cy="42" r="18" fill="currentColor" opacity=".12"/><circle cx="94" cy="42" r="18" stroke="currentColor" stroke-width="2" opacity=".5"/>
+            <text x="94" y="49" font-family="'JetBrains Mono',monospace" font-size="20" font-weight="700" fill="currentColor" text-anchor="middle">$</text>
+          </svg></div>
+          <div class="afc-body">
+            <span class="afc-tag">SPEND</span>
+            <p class="afc-title">Logs every token — each step, where it looped, and the exact token and dollar cost, visible per mission.</p>
+            <span class="afc-more">All features <svg aria-hidden="true"><use href="#i-arrow"/></svg></span>
+          </div>
+        </a>
       </div>
     </div>
   </section>
