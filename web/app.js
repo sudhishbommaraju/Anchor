@@ -274,7 +274,7 @@ function authShell(title, sub, formHtml, footHtml) {
   return `<div class="public auth-bg">
     <a class="brand-lg auth-logo" href="#/">${icon('anchor')}<span>Anchor</span></a>
     <div class="auth-card card">
-      <h1>${title}</h1><p class="muted" style="margin-bottom:18px">${sub}</p>
+      <h1>${title}</h1><p class="auth-sub">${sub}</p>
       ${formHtml}
       <div class="auth-foot">${footHtml}</div>
     </div></div>`;
@@ -293,7 +293,7 @@ function pageLogin(app) {
     const b = document.getElementById('aGo'); b.disabled = true; b.innerHTML = 'Logging in… <span class="spin"></span>';
     const res = await auth.signIn(email, pass);
     if (res.error) { err(res.error); b.disabled = false; b.textContent = 'Log in'; return; }
-    await loadMissions(); const dest = S.pending; S.pending = null; save(); location.hash = '#' + (dest || '/dashboard');
+    await loadMissions(); const dest = (S.pending && !PUBLIC.includes(S.pending)) ? S.pending : '/dashboard'; S.pending = null; save(); location.hash = '#' + dest;
   };
   document.getElementById('aGo').onclick = submit;
   ['aEmail', 'aPass'].forEach((id) => document.getElementById(id).addEventListener('keydown', (e) => { if (e.key === 'Enter') submit(); }));
