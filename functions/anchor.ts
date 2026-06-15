@@ -36,6 +36,11 @@ const DEFAULT_OPTIONS = {
   loopThreshold: 0.85,
   driftThreshold: 0.15,
   window: 8,
+  windowN: 20,
+  loopZ: 1.5,
+  driftConsecutive: 2,
+  explorationSteps: 3,
+  injectionTokenBudget: 1000,
   sequencing: false,
   model: 'openai/gpt-4o-mini',
   embeddingModel: EMBED_MODEL,
@@ -234,14 +239,56 @@ function stripAnchorBlocks(messages: Msg[]): Msg[] {
 }
 
 type Detection = {
-  loop: boolean;
-  drift: boolean;
+  loop: boolean; // CONFIRMED loop (drives headers + corrective)
+  drift: boolean; // CONFIRMED drift
+  loopSuspected: boolean;
+  driftSuspected: boolean;
   loopSimilarity: number | null;
   driftSimilarity: number | null;
+  detectionState: string; // none | loop_suspected | loop_confirmed | drift_suspected | drift_confirmed
   match: { seq: number; content: string } | null;
+  cluster: { id: string; label: string; attempt_count: number } | null;
   priorOutcome: string | null;
+  deadEnds: string[];
+  escalate: boolean;
+  cyclic: boolean;
 };
 
+const EMPTY_DETECTION: Detection = {
+  loop: false, drift: false, loopSuspected: false, driftSuspected: false,
+  loopSimilarity: null, driftSimilarity: null, detectionState: 'none',
+  match: null, cluster: null, priorOutcome: null, deadEnds: [], escalate: false, cyclic: false,
+};
+
+const EST_TOK = (s: string) => Math.ceil((s || '').length / 4); // fast token estimate (chars/4)
+
+// Dead-end-aware loop corrective: cite the failed approach + attempt count + known dead-ends, escalate on repeat.
+function loopCorrective(det: Detection): string {
+  const lines: string[] = ['⚠ LOOP DETECTED.'];
+  if (det.cluster?.label) lines.push(`You have attempted "${truncate(det.cluster.label, 120)}" ${det.cluster.attempt_count} time(s) with no progress.`);
+  else if (det.match) lines.push(`You are repeating a recent action: "${truncate(det.match.content, 160)}".`);
+  const ends = (det.deadEnds || []).slice(0, 3);
+  if (ends.length) {
+    lines.push('These approaches have ALREADY FAILED — do NOT repeat them:');
+    ends.forEach((e) => lines.push(`  - ${truncate(e, 160)}`));
+  } else if (det.priorOutcome) {
+    lines.push(`You already tried this; the result was: "${truncate(det.priorOutcome, 200)}"`);
+  }
+  if (det.escalate) {
+    lines.push('You have failed this repeatedly. STOP and RE-PLAN from scratch: challenge your core assumption about the problem, or state EXACTLY what information you are missing to proceed. Do not attempt the same class of fix again.');
+  } else {
+    lines.push('Do something CATEGORICALLY DIFFERENT: change strategy, challenge an assumption, or decompose the problem differently. If you are missing information, state exactly what.');
+  }
+  return lines.join('\n');
+}
+
+function driftCorrective(det: Detection, planStep: string | null): string {
+  const pct = det.driftSimilarity != null ? Math.round(det.driftSimilarity * 100) : 0;
+  return `⚠ OFF TASK — your recent steps drifted from the mission (relevance ${pct}%). Stop and refocus on the MISSION GOAL above${planStep ? ` (current step: ${planStep})` : ''}.`;
+}
+
+// Bounded injection: compose in priority order (goal > constraints > corrective > step > dead-ends > memory > summary),
+// truncating lowest-priority items to stay under `budget` tokens. Replaces (never stacks) the prior block.
 function buildInjectedBlock(
   mission: Mission,
   summary: string,
@@ -249,111 +296,107 @@ function buildInjectedBlock(
   planStep: string | null,
   det: Detection,
   autoCorrect: boolean,
+  budget = 1000,
 ): string {
-  const lines: string[] = [];
-  lines.push(ANCHOR_SENTINEL + ' (re-injected every call — stay anchored to this)');
-  lines.push('');
-  lines.push('MISSION GOAL:');
-  lines.push(mission.goal);
-  lines.push('');
-
+  const out: string[] = [];
+  let used = 0;
+  const add = (text: string | null): void => {
+    if (!text) return;
+    const t = EST_TOK(text);
+    if (used + t <= budget) { out.push(text); used += t; return; }
+    const room = (budget - used) * 4;
+    if (room > 160) { out.push(text.slice(0, room - 24) + ' …[trimmed]'); used = budget; }
+  };
+  add(`${ANCHOR_SENTINEL} (bounded context, re-injected every call)`);
+  add(`MISSION GOAL:\n${mission.goal}`);
   const cons = (mission.constraints || []).filter(Boolean);
-  lines.push('CONSTRAINTS (must follow):');
-  if (cons.length) cons.forEach((c) => lines.push(`- ${c}`));
-  else lines.push('- (none specified)');
-  lines.push('');
+  add(`CONSTRAINTS (must follow):\n${cons.length ? cons.map((c) => `- ${c}`).join('\n') : '- (none specified)'}`);
+  if (autoCorrect && det.loop) add(loopCorrective(det));
+  else if (autoCorrect && det.drift) add(driftCorrective(det, planStep));
+  if (planStep) add(`CURRENT STEP: ${planStep}`);
+  if (det.deadEnds?.length) add(`DEAD ENDS (already failed — avoid):\n${det.deadEnds.slice(0, 4).map((d) => `- ${truncate(d, 160)}`).join('\n')}`);
+  if (memoryItems.length) add(`RELEVANT MEMORY:\n${memoryItems.map((m) => `- [${m.type}] ${m.content}`).join('\n')}`);
+  if (summary?.trim()) add(`PROGRESS SUMMARY:\n${summary.trim()}`);
+  add('Act only in service of the MISSION GOAL above.');
+  return out.join('\n\n');
+}
 
-  lines.push('PROGRESS SUMMARY:');
-  lines.push(summary?.trim() ? summary.trim() : '(nothing recorded yet)');
-  lines.push('');
-
-  lines.push('ACTIVE MEMORY (decisions, facts, progress, dead-ends, todos):');
-  if (memoryItems.length) memoryItems.forEach((m) => lines.push(`- [${m.type}] ${m.content}`));
-  else lines.push('- (empty)');
-  lines.push('');
-
-  if (planStep) {
-    lines.push(`CURRENT STEP: ${planStep}`);
-    lines.push('');
+// Lightweight periodicity check for A-B-A-B cycles using each prior step's similarity to the incoming action.
+function detectCyclic(recent: Array<{ similarity: number }>): boolean {
+  const hi = recent.map((r, i) => (Number(r.similarity) >= 0.8 ? i : -1)).filter((i) => i >= 0);
+  if (hi.length < 2) return false;
+  for (const p of [2, 3]) {
+    let count = 0;
+    for (const i of hi) if (hi.includes(i - p) || hi.includes(i + p)) count++;
+    if (count >= 2) return true;
   }
-
-  if (autoCorrect && det.loop && det.match) {
-    const pct = det.loopSimilarity != null ? Math.round(det.loopSimilarity * 100) : 0;
-    lines.push(
-      `⚠ LOOP DETECTED — you are repeating a recent action: "${truncate(det.match.content, 240)}" (similarity ${pct}%).`,
-    );
-    if (det.priorOutcome) lines.push(`You already tried this. The result was: "${truncate(det.priorOutcome, 320)}"`);
-    lines.push('Do NOT repeat it. Take a DIFFERENT, concrete next action that moves the mission forward.');
-    lines.push('');
-  }
-
-  if (autoCorrect && det.drift) {
-    const pct = det.driftSimilarity != null ? Math.round(det.driftSimilarity * 100) : 0;
-    lines.push(`⚠ OFF TASK — your latest step looks unrelated to the mission (goal relevance ${pct}%).`);
-    lines.push(`Stop and refocus on the MISSION GOAL above${planStep ? ' (current step: ' + planStep + ')' : ''}.`);
-    lines.push('');
-  }
-
-  lines.push('Act only in service of the MISSION GOAL above. Do not lose track of it.');
-  return lines.join('\n');
+  return false;
 }
 
 // ───────────────────────────── detection ─────────────────────────────
 
-async function detect(
-  missionId: string,
-  embedding: number[],
-  window: number,
-  loopThreshold: number,
-  driftThreshold: number,
-): Promise<Detection> {
-  const empty: Detection = {
-    loop: false,
-    drift: false,
-    loopSimilarity: null,
-    driftSimilarity: null,
-    match: null,
-    priorOutcome: null,
-  };
+async function detect(missionId: string, embedding: number[], opts: typeof DEFAULT_OPTIONS): Promise<Detection> {
   try {
     const db = admin();
-    const { data, error } = await db.rpc('anchor_detect', {
-      p_mission_id: missionId,
-      p_query_embedding: embedding,
-      p_window: window,
-    });
-    if (error || !data) return empty;
-    const d = data as { goal_similarity: number | null; recent: Array<{ seq: number; content: string; similarity: number }> };
+    const window = Number(opts.windowN) || 20;
+    const { data, error } = await db.rpc('anchor_detect2', { p_mission_id: missionId, p_query: embedding, p_window: window });
+    if (error || !data) return EMPTY_DETECTION;
+    const d = data as {
+      goal_similarity: number | null; plan_similarity: number | null; progress_count: number; total_steps: number;
+      recent: Array<{ seq: number; content: string; similarity: number; loop_similarity: number | null; detection_state: string }>;
+      nearest_cluster: { id: string; label: string; attempt_count: number; similarity: number } | null;
+    };
     const recent = d.recent || [];
-    const top = recent.length ? recent[0] : null; // recent is ordered by similarity desc
-    const loopSim = top ? top.similarity : null;
-    const goalSim = d.goal_similarity;
-    const loop = loopSim != null && loopSim >= loopThreshold;
-    const drift = goalSim != null && goalSim <= driftThreshold;
+    let top: { seq: number; content: string } | null = null;
+    let maxSim = 0;
+    for (const r of recent) { const s = Number(r.similarity); if (s > maxSim) { maxSim = s; top = { seq: r.seq, content: r.content }; } }
+
+    // trend stats over prior steps' own max-similarity
+    const priorSims = recent.map((r) => Number(r.loop_similarity)).filter((x) => !Number.isNaN(x));
+    const mean = priorSims.length ? priorSims.reduce((a, b) => a + b, 0) / priorSims.length : 0;
+    const std = priorSims.length ? Math.sqrt(priorSims.reduce((a, b) => a + (b - mean) ** 2, 0) / priorSims.length) : 0;
+    const prevMax = recent[0] ? Number(recent[0].loop_similarity) || 0 : 0;
+    const prevState = recent[0]?.detection_state || 'none';
+
+    const loopThreshold = Number(opts.loopThreshold) || 0.85;
+    const z = Number(opts.loopZ) || 1.5;
+    const cluster = d.nearest_cluster;
+    const loopByCluster = !!cluster && Number(cluster.similarity) >= 0.85; // re-attempting a known-failed approach
+    const loopByThreshold = maxSim >= loopThreshold;
+    const loopByTrend = priorSims.length >= 3 && maxSim > mean + z * std && maxSim >= prevMax - 0.02 && maxSim > 0.6;
+    const cyclic = detectCyclic(recent);
+    const loopSuspected = loopByThreshold || loopByTrend || loopByCluster || cyclic;
+    const loopConfirmed = loopSuspected && (maxSim >= 0.97 || loopByCluster || cyclic || prevState.startsWith('loop'));
+
+    // drift — phase-gated (skip exploration) + plan-aware + debounced
+    const driftThreshold = Number(opts.driftThreshold) || 0.15;
+    const inExploration = d.total_steps < (Number(opts.explorationSteps) || 3) || (d.progress_count || 0) === 0;
+    const onTask = Math.max(d.goal_similarity || 0, d.plan_similarity || 0);
+    const driftSuspected = !inExploration && onTask <= driftThreshold;
+    const driftConfirmed = driftSuspected && prevState.startsWith('drift');
+
+    const detectionState = loopConfirmed ? 'loop_confirmed' : loopSuspected ? 'loop_suspected'
+      : driftConfirmed ? 'drift_confirmed' : driftSuspected ? 'drift_suspected' : 'none';
 
     let priorOutcome: string | null = null;
-    if (loop && top) {
-      const { data: outcome } = await db
-        .from('steps')
-        .select('content')
-        .eq('mission_id', missionId)
-        .eq('role', 'model_response')
-        .gt('seq', top.seq)
-        .order('seq', { ascending: true })
-        .limit(1)
-        .maybeSingle();
-      priorOutcome = (outcome as { content?: string } | null)?.content ?? null;
+    let deadEnds: string[] = [];
+    if (loopConfirmed) {
+      if (top) {
+        const { data: outcome } = await db.from('steps').select('content').eq('mission_id', missionId).eq('role', 'model_response').gt('seq', top.seq).order('seq', { ascending: true }).limit(1).maybeSingle();
+        priorOutcome = (outcome as { content?: string } | null)?.content ?? null;
+      }
+      const { data: de } = await db.from('memory_items').select('content').eq('mission_id', missionId).eq('type', 'dead_end').eq('active', true).order('created_at', { ascending: false }).limit(4);
+      deadEnds = ((de as Array<{ content: string }>) || []).map((x) => x.content);
     }
+
     return {
-      loop,
-      drift,
-      loopSimilarity: loopSim,
-      driftSimilarity: goalSim,
-      match: top ? { seq: top.seq, content: top.content } : null,
-      priorOutcome,
+      loop: loopConfirmed, drift: driftConfirmed, loopSuspected, driftSuspected,
+      loopSimilarity: maxSim || null, driftSimilarity: onTask || null, detectionState,
+      match: top, cluster: cluster ? { id: cluster.id, label: cluster.label, attempt_count: Number(cluster.attempt_count) } : null,
+      priorOutcome, deadEnds, escalate: !!cluster && Number(cluster.attempt_count) >= 3, cyclic,
     };
   } catch (_e) {
-    return empty;
+    return EMPTY_DETECTION;
   }
 }
 
@@ -369,7 +412,7 @@ async function fetchInjectionMemory(
       const { data } = await db.rpc('anchor_match_memory', {
         p_mission_id: missionId,
         p_query_embedding: embedding,
-        p_limit: 12,
+        p_limit: 6,
         p_threshold: 0.0,
       });
       if (Array.isArray(data) && data.length) {
@@ -418,6 +461,7 @@ async function postProcess(opts: {
   det: Detection;
   intervened: boolean;
   injectedPreview: string;
+  failure?: boolean;
 }): Promise<void> {
   const db = admin();
   const { mission, incomingText, incomingEmbedding, responseText, model, usage, det, intervened } = opts;
@@ -447,10 +491,14 @@ async function postProcess(opts: {
       loop_similarity: det.loopSimilarity,
       drift_flag: det.drift,
       drift_similarity: det.driftSimilarity,
+      detection_state: det.detectionState,
       intervened,
       meta: {
         matched_seq: det.match?.seq ?? null,
         corrective_injected: intervened && (det.loop || det.drift),
+        injection_tokens: EST_TOK(opts.injectedPreview),
+        cluster: det.cluster ? { label: det.cluster.label, attempt_count: det.cluster.attempt_count } : null,
+        escalated: det.escalate,
         injected_preview: truncate(opts.injectedPreview, 1200),
       },
     };
@@ -471,6 +519,24 @@ async function postProcess(opts: {
     };
     const { data: insertedResp } = await db.from('steps').insert([respStep]).select('id');
     const respId = (insertedResp as Array<{ id: string }> | null)?.[0]?.id ?? null;
+
+    // Track failed approaches: on a confirmed loop or a reported failure, cluster the attempt + record a dead-end.
+    if ((det.loop || opts.failure) && incomingEmbedding) {
+      const label = truncate(incomingText.replace(/^\w+:\s*/, ''), 70);
+      let clusterLabel = label;
+      try {
+        const { data: cl } = await db.rpc('anchor_upsert_cluster', { p_mission_id: mission.id, p_query: incomingEmbedding, p_label: label, p_seq: reqSeq, p_threshold: 0.85 });
+        clusterLabel = (cl as { label?: string } | null)?.label || label;
+      } catch (_e) { /* best effort */ }
+      try {
+        const { data: dup } = await db.rpc('anchor_match_memory', { p_mission_id: mission.id, p_query_embedding: incomingEmbedding, p_limit: 1, p_threshold: 0.95 });
+        const dupDeadEnd = Array.isArray(dup) && dup.some((x: { type?: string }) => x.type === 'dead_end');
+        if (!dupDeadEnd) {
+          const content = `Tried "${clusterLabel}" — ${opts.failure ? 'reported failure/partial' : 'looped with no progress'}.`;
+          await db.from('memory_items').insert([{ mission_id: mission.id, type: 'dead_end', content: truncate(content, 300), embedding: incomingEmbedding, provenance: 'observed', source_step_id: reqId }]);
+        }
+      } catch (_e) { /* best effort */ }
+    }
 
     // Apply extracted memory: dedupe via pgvector, then insert; refresh rolling summary.
     if (extracted) {
@@ -584,18 +650,8 @@ function safeJson(s: string): { summary?: string; items?: unknown[] } | null {
 
 // ───────────────────────────── anchoring (shared) ─────────────────────────────
 
-const EMPTY_DETECTION: Detection = {
-  loop: false,
-  drift: false,
-  loopSimilarity: null,
-  driftSimilarity: null,
-  match: null,
-  priorOutcome: null,
-};
-
 // Run the full anchoring pass over OpenAI-format messages: detect loop/drift and
-// build the fresh system block. Best-effort — any failure yields an empty block
-// so the caller falls back to a transparent passthrough.
+// build the fresh BOUNDED system block. Best-effort — any failure yields an empty block.
 async function anchorPrepare(
   mission: Mission,
   opts: typeof DEFAULT_OPTIONS,
@@ -605,21 +661,13 @@ async function anchorPrepare(
     const incomingText = extractIncomingAction(oaMessages);
     const incomingEmbedding = await embed(incomingText);
     let det = EMPTY_DETECTION;
-    if (incomingEmbedding) {
-      det = await detect(
-        mission.id,
-        incomingEmbedding,
-        Number(opts.window) || 8,
-        Number(opts.loopThreshold) || 0.85,
-        Number(opts.driftThreshold) || 0.15,
-      );
-    }
+    if (incomingEmbedding) det = await detect(mission.id, incomingEmbedding, opts);
     const intervened = !!opts.autoCorrect && (det.loop || det.drift);
     const [memItems, planStep] = await Promise.all([
       fetchInjectionMemory(mission.id, incomingEmbedding),
       opts.sequencing ? activePlanStep(mission.id) : Promise.resolve(null),
     ]);
-    const block = buildInjectedBlock(mission, mission.memory_summary, memItems, planStep, det, !!opts.autoCorrect);
+    const block = buildInjectedBlock(mission, mission.memory_summary, memItems, planStep, det, !!opts.autoCorrect, Number(opts.injectionTokenBudget) || 1000);
     return { incomingText, incomingEmbedding, det, intervened, block };
   } catch (_e) {
     return { incomingText: '', incomingEmbedding: null, det: EMPTY_DETECTION, intervened: false, block: '' };
@@ -1125,7 +1173,7 @@ async function handleContext(req: Request): Promise<Response> {
     opts.sequencing ? activePlanStep(mission.id) : Promise.resolve(null),
     lastFlaggedStep(mission.id),
   ]);
-  const block = buildInjectedBlock(mission, mission.memory_summary, memItems, planStep, EMPTY_DETECTION, !!opts.autoCorrect);
+  const block = buildInjectedBlock(mission, mission.memory_summary, memItems, planStep, EMPTY_DETECTION, !!opts.autoCorrect, Number(opts.injectionTokenBudget) || 1000);
   const warnings: Array<{ type: string; detail: string }> = [];
   if (last?.loop_flag) warnings.push({ type: 'loop', detail: `Your previous step repeated a recent action (similarity ${pct(last.loop_similarity)}%). Do not repeat it.` });
   if (last?.drift_flag) warnings.push({ type: 'drift', detail: `Your previous step drifted off the mission. Refocus on the goal.` });
@@ -1154,11 +1202,12 @@ async function handleReport(req: Request): Promise<Response> {
   const opts = mergedOptions(mission);
   const incomingEmbedding = await embed(action);
   let det: Detection = EMPTY_DETECTION;
-  if (incomingEmbedding) det = await detect(mission.id, incomingEmbedding, Number(opts.window) || 8, Number(opts.loopThreshold) || 0.85, Number(opts.driftThreshold) || 0.15);
+  if (incomingEmbedding) det = await detect(mission.id, incomingEmbedding, opts);
   const intervened = !!opts.autoCorrect && (det.loop || det.drift);
   const responseText = [result, outcome ? 'Outcome: ' + outcome : ''].filter(Boolean).join('\n');
+  const failure = /\b(fail|failed|failure|partial|stuck|error|errors|broken|crash|exception|doesn'?t work|not working|wrong|incorrect|blocked)\b/i.test(`${outcome} ${result}`);
 
-  await postProcess({ mission, incomingText: action, incomingEmbedding, responseText, model: 'anchor-report', usage: null, det, intervened, injectedPreview: '' });
+  await postProcess({ mission, incomingText: action, incomingEmbedding, responseText, model: 'anchor-report', usage: null, det, intervened, injectedPreview: '', failure });
 
   if (opts.sequencing && (body.step_complete === true || /\b(done|complete|completed|finished|works|passing|fixed)\b/i.test(outcome))) {
     await advancePlan(mission.id).catch(() => {});
@@ -1169,7 +1218,7 @@ async function handleReport(req: Request): Promise<Response> {
     fetchInjectionMemory(mission.id, incomingEmbedding),
     opts.sequencing ? activePlanStep(mission.id) : Promise.resolve(null),
   ]);
-  const block = buildInjectedBlock(fresh, fresh.memory_summary, memItems, planStep, det, !!opts.autoCorrect);
+  const block = buildInjectedBlock(fresh, fresh.memory_summary, memItems, planStep, det, !!opts.autoCorrect, Number(opts.injectionTokenBudget) || 1000);
   const warnings: Array<{ type: string; detail: string }> = [];
   if (det.loop) warnings.push({ type: 'loop', detail: `You repeated "${truncate(det.match?.content || '', 120)}" (similarity ${pct(det.loopSimilarity)}%). You already tried this${det.priorOutcome ? '; result: ' + truncate(det.priorOutcome, 160) : ''}. Do something different.` });
   if (det.drift) warnings.push({ type: 'drift', detail: `That step drifted from the mission (goal relevance ${pct(det.driftSimilarity)}%). Refocus on the goal.` });
@@ -1197,7 +1246,7 @@ async function handleCheck(req: Request): Promise<Response> {
   const opts = mergedOptions(mission);
   const emb = await embed(action);
   let det: Detection = EMPTY_DETECTION;
-  if (emb) det = await detect(mission.id, emb, Number(opts.window) || 8, Number(opts.loopThreshold) || 0.85, Number(opts.driftThreshold) || 0.15);
+  if (emb) det = await detect(mission.id, emb, opts);
   return json({
     loop: det.loop,
     drift: det.drift,
@@ -1315,10 +1364,13 @@ async function buildPlan(missionId: string, goal: string, constraints: string[])
   const parsed = safeJson(r.choices[0]?.message?.content ?? '');
   const steps = Array.isArray(parsed?.steps) ? (parsed!.steps as string[]) : [];
   if (!steps.length) return;
-  const rows = steps.slice(0, 12).map((instruction, i) => ({
+  const list = steps.slice(0, 12).map((s) => String(s));
+  const embs = await embedBatch(list); // for phase-gated drift (compare to active plan step)
+  const rows = list.map((instruction, i) => ({
     mission_id: missionId,
     ord: i,
-    instruction: String(instruction),
+    instruction,
+    embedding: embs?.[i] ?? null,
     status: i === 0 ? 'active' : 'pending',
   }));
   await admin().from('plan_steps').insert(rows);
