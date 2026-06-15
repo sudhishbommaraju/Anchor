@@ -255,7 +255,7 @@
     const maxScroll = () => document.documentElement.scrollHeight - window.innerHeight;
     const clamp = (v) => Math.max(0, Math.min(v, maxScroll()));
     const step = () => {
-      cur += (target - cur) * 0.12;
+      cur += (target - cur) * 0.1;
       if (Math.abs(target - cur) < 0.4) { cur = target; window.scrollTo(0, cur); running = false; return; }
       window.scrollTo(0, cur); raf(step);
     };

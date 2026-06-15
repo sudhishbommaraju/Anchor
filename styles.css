@@ -488,6 +488,22 @@ code{font-family:var(--fm);font-size:.88em;}
 .reveal.in{opacity:1;transform:none;}
 @keyframes fadeUp{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:none;}}
 
+/* cross-page transitions (nav) — View Transitions API, cross-document */
+@view-transition{navigation:auto;}
+::view-transition-old(root){animation:pgOut .26s var(--e-out) both;}
+::view-transition-new(root){animation:pgIn .44s var(--e-out) both;}
+@keyframes pgOut{to{opacity:0;transform:translateY(-6px);}}
+@keyframes pgIn{from{opacity:0;transform:translateY(12px);}}
+/* entrance fade for browsers without cross-document view transitions */
+@supports not (view-transition-name: none){
+  @keyframes pageEnter{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:none;}}
+  main{animation:pageEnter .5s var(--e-out) both;}
+}
+@media (prefers-reduced-motion:reduce){
+  ::view-transition-old(root),::view-transition-new(root){animation:none !important;}
+  main{animation:none !important;}
+}
+
 /* animated feature cards — vanilla adaptation of shadcn AnimatedFeatureCard */
 .afgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;}
 .afcard{position:relative;display:flex;flex-direction:column;justify-content:flex-end;height:380px;
