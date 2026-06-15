@@ -35,6 +35,12 @@
   <symbol id="i-wallet" viewBox="0 0 24 24"><path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"/><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"/><path d="M18 12a2 2 0 0 0 0 4h4v-4Z"/></symbol>
   <symbol id="i-menu" viewBox="0 0 24 24"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></symbol>
   <symbol id="i-github" viewBox="0 0 24 24"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/></symbol>
+  <symbol id="i-burst" viewBox="0 0 24 24"><g stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="12" y1="2.5" x2="12" y2="8"/><line x1="12" y1="16" x2="12" y2="21.5"/><line x1="2.5" y1="12" x2="8" y2="12"/><line x1="16" y1="12" x2="21.5" y2="12"/><line x1="5.3" y1="5.3" x2="9" y2="9"/><line x1="15" y1="15" x2="18.7" y2="18.7"/><line x1="18.7" y1="5.3" x2="15" y2="9"/><line x1="9" y1="15" x2="5.3" y2="18.7"/></g></symbol>
+  <symbol id="i-cursor" viewBox="0 0 24 24"><path d="M5 3l14.5 7.2-6.3 1.7L9.7 19.4 5 3z" fill="currentColor"/></symbol>
+  <symbol id="i-knot" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="9.5" r="5"/><circle cx="15" cy="9.5" r="5"/><circle cx="12" cy="15" r="5"/></g></symbol>
+  <symbol id="i-plug" viewBox="0 0 24 24"><path d="M9 2.5v4.5M15 2.5v4.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M7 7h10v4a5 5 0 0 1-10 0V7Z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M12 16v5.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+  <symbol id="i-term" viewBox="0 0 24 24"><rect x="2.5" y="4" width="19" height="16" rx="2.6" fill="none" stroke="currentColor" stroke-width="2"/><path d="M7 9.5l3 2.5-3 2.5M12.5 15H17" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-code" viewBox="0 0 24 24"><path d="M8 6.5l-5 5.5 5 5.5M16 6.5l5 5.5-5 5.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
 </svg>
 
 <a class="skip" href="#main">Skip to content</a>
@@ -64,15 +70,41 @@
     <div class="hero-bg" aria-hidden="true"></div>
     <svg class="hero-deco l" viewBox="0 0 200 600" fill="none" aria-hidden="true" preserveAspectRatio="xMidYMid slice"><path d="M40 0 v600 M40 40 q60 20 70 80 M40 160 q70 24 78 92 M40 300 q64 22 74 86 M40 440 q60 20 70 80" stroke="currentColor" stroke-width="2"/><circle cx="110" cy="120" r="5" fill="currentColor"/><circle cx="118" cy="252" r="5" fill="currentColor"/><circle cx="114" cy="386" r="5" fill="currentColor"/></svg>
     <svg class="hero-deco r" viewBox="0 0 200 600" fill="none" aria-hidden="true" preserveAspectRatio="xMidYMid slice"><path d="M40 0 v600 M40 40 q60 20 70 80 M40 160 q70 24 78 92 M40 300 q64 22 74 86 M40 440 q60 20 70 80" stroke="currentColor" stroke-width="2"/><circle cx="110" cy="120" r="5" fill="currentColor"/><circle cx="118" cy="252" r="5" fill="currentColor"/><circle cx="114" cy="386" r="5" fill="currentColor"/></svg>
-    <div class="hero-inner">
-      <span class="pill reveal"><span class="dot"></span> Built on <b>InsForge</b></span>
-      <h1 class="reveal" data-reveal-delay="60">Agents drift, loop, and forget.<br><span class="grad">Anchor keeps them on mission.</span></h1>
-      <p class="lead reveal" data-reveal-delay="140">Anchor re-injects your mission and a living memory into your AI coding agent on every model call — catching loops and drift, and logging every token, across your whole stack.</p>
-      <div class="hero-actions reveal" data-reveal-delay="220">
-        <a class="btn lg" data-cta="signup" href="#">Sign up <svg aria-hidden="true"><use href="#i-arrow"/></svg></a>
-        <a class="btn ghost lg" data-cta="login" href="#">Sign in</a>
+    <div class="hero-inner hero-grid">
+      <div class="hero-copy">
+        <span class="pill reveal"><span class="dot"></span> Built on <b>InsForge</b></span>
+        <h1 class="reveal" data-reveal-delay="60">Agents drift, loop, and forget.<br><span class="grad">Anchor keeps them on mission.</span></h1>
+        <p class="lead reveal" data-reveal-delay="140">Anchor re-injects your mission and a living memory into your AI coding agent on every model call — catching loops and drift, and logging every token, across your whole stack.</p>
+        <div class="hero-actions reveal" data-reveal-delay="220">
+          <a class="btn lg" data-cta="signup" href="#">Sign up <svg aria-hidden="true"><use href="#i-arrow"/></svg></a>
+          <a class="btn ghost lg" data-cta="login" href="#">Sign in</a>
+        </div>
+        <p class="hero-note reveal" data-reveal-delay="280">Free to start · one base-URL swap · never breaks your agent</p>
       </div>
-      <p class="hero-note reveal" data-reveal-delay="280">Free to start · one base-URL swap · never breaks your agent</p>
+
+      <!-- animated integrations field: tiles drift; center cycles through what Anchor drops into -->
+      <div class="ifield reveal" data-reveal-delay="200" aria-hidden="true">
+        <div class="if-bg"></div>
+        <div class="if-orbit">
+          <div class="ic-chip f1" style="--x:5%;--y:13%;--d:13s;--delay:-1s;--c:#5e6ad2"><svg aria-hidden="true"><use href="#i-burst"/></svg></div>
+          <div class="ic-chip f2" style="--x:25%;--y:31%;--d:15s;--delay:-5s;--c:#0d9488"><svg aria-hidden="true"><use href="#i-knot"/></svg></div>
+          <div class="ic-chip f3" style="--x:7%;--y:63%;--d:14s;--delay:-3s;--c:#2f3850"><svg aria-hidden="true"><use href="#i-cursor"/></svg></div>
+          <div class="ic-chip f1" style="--x:17%;--y:85%;--d:16s;--delay:-7s;--c:#0d9488"><svg aria-hidden="true"><use href="#i-code"/></svg></div>
+          <div class="ic-chip f2" style="--x:45%;--y:7%;--d:13s;--delay:-4s;--c:#5e6ad2"><svg aria-hidden="true"><use href="#i-plug"/></svg></div>
+          <div class="ic-chip f3" style="--x:71%;--y:15%;--d:15s;--delay:-2s;--c:#2f3850"><svg aria-hidden="true"><use href="#i-term"/></svg></div>
+          <div class="ic-chip f1" style="--x:87%;--y:41%;--d:14s;--delay:-6s;--c:#c2680a"><svg aria-hidden="true"><use href="#i-burst"/></svg></div>
+          <div class="ic-chip f2" style="--x:79%;--y:73%;--d:16s;--delay:-8s;--c:#5e6ad2"><svg aria-hidden="true"><use href="#i-code"/></svg></div>
+          <div class="ic-chip f3" style="--x:49%;--y:88%;--d:13s;--delay:-3.5s;--c:#c2680a"><svg aria-hidden="true"><use href="#i-knot"/></svg></div>
+        </div>
+        <div class="if-focus swap" id="ifFocus" style="--fc:#5e6ad2">
+          <div class="if-logo" id="ifLogo"><svg aria-hidden="true"><use href="#i-burst"/></svg></div>
+          <div class="if-name" id="ifName">Claude Code</div>
+          <div class="if-row">
+            <span class="if-chip-l">base-URL swap</span>
+            <span class="if-chip-r"><svg aria-hidden="true"><use href="#i-check"/></svg> on-mission</span>
+          </div>
+        </div>
+      </div>
     </div>
 
     <!-- animated product demo: generate key → terminal → live monitor (loops ~10s) -->

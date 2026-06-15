@@ -201,6 +201,34 @@
     setTimeout(run, 350);
   })();
 
+  /* ---- hero integrations field: center card cycles through what Anchor drops into ---- */
+  (function integrationsField(){
+    const focus = document.getElementById('ifFocus');
+    if (!focus) return;
+    const logo = document.getElementById('ifLogo'), name = document.getElementById('ifName');
+    const items = [
+      { n: 'Claude Code',     i: 'i-burst',  c: '#5e6ad2' },
+      { n: 'Cursor',          i: 'i-cursor', c: '#2f3850' },
+      { n: 'OpenAI SDK',      i: 'i-knot',   c: '#0d9488' },
+      { n: 'Anthropic SDK',   i: 'i-burst',  c: '#c2680a' },
+      { n: 'MCP',             i: 'i-plug',   c: '#5e6ad2' },
+      { n: 'any REST client', i: 'i-term',   c: '#2f3850' },
+    ];
+    let k = 0;
+    const show = (idx) => {
+      const it = items[idx];
+      focus.style.setProperty('--fc', it.c);
+      logo.innerHTML = '<svg aria-hidden="true"><use href="#' + it.i + '"/></svg>';
+      name.textContent = it.n;
+    };
+    show(0);
+    setInterval(() => {
+      k = (k + 1) % items.length;
+      focus.classList.remove('swap'); void focus.offsetWidth; focus.classList.add('swap');
+      show(k);
+    }, 2600);
+  })();
+
   /* ---- tabs ---- */
   const tabs = [...document.querySelectorAll('.tab')], panes = [...document.querySelectorAll('.code-pane')];
   tabs.forEach((tab) => tab.addEventListener('click', () => {
