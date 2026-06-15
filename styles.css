@@ -451,12 +451,44 @@ code{font-family:var(--fm);font-size:.88em;}
 .reveal.in{opacity:1;transform:none;}
 @keyframes fadeUp{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:none;}}
 
+/* animated feature cards — vanilla adaptation of shadcn AnimatedFeatureCard */
+.afgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;}
+.afcard{position:relative;display:flex;flex-direction:column;justify-content:flex-end;height:380px;
+  border:1px solid var(--line);border-radius:var(--r);background:var(--card);padding:22px;box-shadow:var(--sh-xs);overflow:hidden;
+  transition:transform .55s var(--e-spring),box-shadow .5s var(--e-out),border-color .35s;}
+.afcard:hover{transform:translateY(-10px);box-shadow:var(--sh-lg);border-color:var(--fc-line);}
+.afc-glow{position:absolute;inset:0;z-index:0;opacity:.55;pointer-events:none;
+  background:radial-gradient(120% 82% at 50% 26%,var(--fc-glow),transparent 62%);
+  transition:opacity .5s var(--e-out),transform .6s var(--e-out);}
+.afcard:hover .afc-glow{opacity:1;transform:scale(1.06);}
+.afc-idx{position:absolute;top:20px;left:22px;z-index:3;font-family:var(--fm);font-size:15px;font-weight:600;color:var(--faint);letter-spacing:.04em;}
+.afc-art{position:absolute;left:0;right:0;top:0;bottom:96px;z-index:1;display:flex;align-items:center;justify-content:center;
+  transform:translateY(-14px);transition:transform .6s var(--e-spring);animation:afFloat 5s var(--e-out) infinite;}
+.afc-art svg{width:154px;height:154px;color:var(--fc);filter:drop-shadow(0 16px 26px rgba(23,31,51,.16));}
+.afc-art .plate{fill:var(--fc-fill);}
+.afgrid .afcard:nth-child(2) .afc-art{animation-delay:-1.6s;}
+.afgrid .afcard:nth-child(3) .afc-art{animation-delay:-3.2s;}
+.afcard:hover .afc-art{animation:none;transform:translateY(-28px) scale(1.16);}
+@keyframes afFloat{0%,100%{transform:translateY(-12px);}50%{transform:translateY(-24px);}}
+.afc-body{position:relative;z-index:2;background:rgba(255,255,255,.74);backdrop-filter:saturate(1.25) blur(9px);-webkit-backdrop-filter:saturate(1.25) blur(9px);
+  border:1px solid var(--line);border-radius:14px;padding:15px 16px;box-shadow:var(--sh-xs);}
+.afc-tag{display:inline-block;font-family:var(--fm);font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.12em;
+  padding:4px 10px;border-radius:var(--r-pill);background:var(--fc-dark);color:var(--fc);margin-bottom:10px;}
+.afc-body h3{font-family:var(--fd);font-weight:800;font-size:17px;letter-spacing:-.01em;margin:0 0 5px;color:var(--ink);}
+.afc-body p{font-size:13.5px;line-height:1.55;color:var(--body);margin:0;}
+.afc-link{display:inline-flex;align-items:center;gap:6px;margin-top:12px;color:var(--fc);font-family:var(--fb);font-weight:600;font-size:13px;}
+.afc-link svg{width:15px;height:15px;transition:transform .25s var(--e-out);}
+.afcard:hover .afc-link svg{transform:translateX(4px);}
+.afc-indigo{--fc:#5e6ad2;--fc-fill:#e7e9fb;--fc-dark:#eef0fc;--fc-line:rgba(94,106,210,.34);--fc-glow:rgba(94,106,210,.20);}
+.afc-amber{--fc:#c2680a;--fc-fill:#fbe6cc;--fc-dark:#fbf1e2;--fc-line:rgba(194,104,10,.34);--fc-glow:rgba(217,119,6,.20);}
+.afc-teal{--fc:#0d9488;--fc-fill:#d4f1ec;--fc-dark:#e7f6f3;--fc-line:rgba(13,148,136,.32);--fc-glow:rgba(13,148,136,.20);}
+
 /* responsive */
 @media (max-width:980px){
   :root{--gutter:24px;}
   .head-split{grid-template-columns:1fr;gap:14px;}
   .head-split .note{text-align:left;}
-  .cards-3,.cards-feat,.flow,.pipeline,.intg{grid-template-columns:1fr 1fr;}
+  .cards-3,.cards-feat,.flow,.afgrid,.pipeline,.intg{grid-template-columns:1fr 1fr;}
   .flow .step .conn{display:none;}
   .frow,.frow.flip{grid-template-columns:1fr;gap:32px;}
   .frow.flip .fr-copy{order:0;}
@@ -478,7 +510,7 @@ code{font-family:var(--fm);font-size:.88em;}
   .nav.open .nav-mobile{display:flex;}
   .hero{padding:52px 0 40px;}
   .section{padding:62px 0;}
-  .cards-3,.cards-feat,.flow,.pipeline,.intg{grid-template-columns:1fr;}
+  .cards-3,.cards-feat,.flow,.afgrid,.pipeline,.intg{grid-template-columns:1fr;}
   .mxr{grid-template-columns:1.3fr .7fr .7fr;}
   .opt-row{grid-template-columns:1fr;gap:5px;padding:15px 16px;}
   .opt-head{display:none;}

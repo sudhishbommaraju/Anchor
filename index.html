@@ -134,10 +134,56 @@
   <section class="section">
     <div class="wrap">
       <div class="sec-head center reveal"><h2>From a goal to a running agent.</h2><p class="sub">Three steps, about a minute. No SDKs to rewrite, no infra to run.</p></div>
-      <div class="flow">
-        <div class="step reveal"><div class="sn">STEP 01</div><div class="si"><svg aria-hidden="true"><use href="#i-target"/></svg></div><h3>Write the mission</h3><p>Your goal and constraints — once. Anchor embeds the goal for drift detection.</p><div class="conn"><svg aria-hidden="true"><use href="#i-arrow-right"/></svg></div></div>
-        <div class="step reveal" data-reveal-delay="90"><div class="sn">STEP 02</div><div class="si"><svg aria-hidden="true"><use href="#i-key"/></svg></div><h3>Get an API key</h3><p>Anchor mints a dedicated <code style="font-family:var(--fm);font-size:.85em">anc_live_</code> key, stored only as a hash.</p><div class="conn"><svg aria-hidden="true"><use href="#i-arrow-right"/></svg></div></div>
-        <div class="step reveal" data-reveal-delay="180"><div class="sn">STEP 03</div><div class="si"><svg aria-hidden="true"><use href="#i-anchor"/></svg></div><h3>Point your agent</h3><p>Swap the base URL. From then on, every call is re-anchored automatically.</p><div class="conn"></div></div>
+      <div class="afgrid">
+        <article class="afcard afc-indigo reveal">
+          <div class="afc-glow"></div>
+          <div class="afc-idx">001</div>
+          <div class="afc-art">
+            <svg viewBox="0 0 120 120" aria-hidden="true">
+              <circle class="plate" cx="60" cy="60" r="46"/>
+              <circle cx="57" cy="64" r="25" fill="currentColor" opacity=".14"/>
+              <circle cx="57" cy="64" r="25" fill="none" stroke="currentColor" stroke-width="5"/>
+              <circle cx="57" cy="64" r="14" fill="none" stroke="currentColor" stroke-width="5"/>
+              <circle cx="57" cy="64" r="4.2" fill="currentColor"/>
+              <path d="M85 29a10 10 0 0 0-10 10c0 7.2 10 16 10 16s10-8.8 10-16a10 10 0 0 0-10-10Z" fill="currentColor" stroke="#fff" stroke-width="3"/>
+              <circle cx="85" cy="39" r="3.4" fill="#fff"/>
+            </svg>
+          </div>
+          <div class="afc-body"><span class="afc-tag">Step 01 · Mission</span><h3>Write the mission</h3><p>Your goal and constraints — once. Anchor embeds the goal for drift detection.</p></div>
+        </article>
+        <article class="afcard afc-amber reveal" data-reveal-delay="90">
+          <div class="afc-glow"></div>
+          <div class="afc-idx">002</div>
+          <div class="afc-art">
+            <svg viewBox="0 0 120 120" aria-hidden="true">
+              <circle class="plate" cx="60" cy="60" r="46"/>
+              <g transform="rotate(45 60 60)">
+                <circle cx="60" cy="37" r="17" fill="currentColor"/>
+                <circle cx="60" cy="37" r="7" fill="#fff"/>
+                <rect x="55.5" y="49" width="9" height="38" rx="3.5" fill="currentColor"/>
+                <rect x="64.5" y="66" width="12" height="8" rx="2.5" fill="currentColor"/>
+                <rect x="64.5" y="80" width="9" height="8" rx="2.5" fill="currentColor"/>
+              </g>
+            </svg>
+          </div>
+          <div class="afc-body"><span class="afc-tag">Step 02 · API key</span><h3>Get an API key</h3><p>Anchor mints a dedicated <code style="font-family:var(--fm);font-size:.85em">anc_live_</code> key, stored only as a hash.</p></div>
+        </article>
+        <article class="afcard afc-teal reveal" data-reveal-delay="180">
+          <div class="afc-glow"></div>
+          <div class="afc-idx">003</div>
+          <div class="afc-art">
+            <svg viewBox="0 0 120 120" aria-hidden="true">
+              <circle class="plate" cx="60" cy="60" r="46"/>
+              <circle cx="60" cy="32" r="9" fill="none" stroke="currentColor" stroke-width="6"/>
+              <rect x="56.5" y="39" width="7" height="44" rx="3.5" fill="currentColor"/>
+              <rect x="45" y="48" width="30" height="7" rx="3.5" fill="currentColor"/>
+              <path d="M31 60a29 29 0 0 0 58 0" fill="none" stroke="currentColor" stroke-width="7" stroke-linecap="round"/>
+              <path d="M31 60l-8 1.5 6 6.5z" fill="currentColor"/>
+              <path d="M89 60l8 1.5-6 6.5z" fill="currentColor"/>
+            </svg>
+          </div>
+          <div class="afc-body"><span class="afc-tag">Step 03 · Connect</span><h3>Point your agent</h3><p>Swap the base URL. From then on, every call is re-anchored automatically.</p></div>
+        </article>
       </div>
     </div>
   </section>
@@ -159,10 +205,50 @@
   <section class="section">
     <div class="wrap">
       <div class="sec-head center reveal"><h2>Three jobs, handled.</h2><p class="sub">The loudest agent complaints — looping, losing context, burning tokens — solved on every call.</p></div>
-      <div class="cards-feat">
-        <article class="fcard reveal"><span class="ic"><svg aria-hidden="true"><use href="#i-layers"/></svg></span><h3>Re-grounds the agent</h3><p>Mission + a deduped, living memory re-injected as a fresh system block every model call.</p><a href="product.html" style="display:inline-flex;align-items:center;gap:6px;margin-top:14px;color:var(--accent);font-family:var(--fb);font-weight:600;font-size:14px">See the product <svg aria-hidden="true" style="width:15px;height:15px"><use href="#i-arrow"/></svg></a></article>
-        <article class="fcard reveal" data-reveal-delay="80"><span class="ic"><svg aria-hidden="true"><use href="#i-target"/></svg></span><h3>Catches loops &amp; drift</h3><p>pgvector similarity flags repeats and tangents, then injects a corrective in real time.</p><a href="why.html" style="display:inline-flex;align-items:center;gap:6px;margin-top:14px;color:var(--accent);font-family:var(--fb);font-weight:600;font-size:14px">Why it matters <svg aria-hidden="true" style="width:15px;height:15px"><use href="#i-arrow"/></svg></a></article>
-        <article class="fcard reveal" data-reveal-delay="160"><span class="ic"><svg aria-hidden="true"><use href="#i-wallet"/></svg></span><h3>Logs every token</h3><p>Each step, where it looped, and the exact token and dollar cost — visible per mission.</p><a href="features.html" style="display:inline-flex;align-items:center;gap:6px;margin-top:14px;color:var(--accent);font-family:var(--fb);font-weight:600;font-size:14px">All features <svg aria-hidden="true" style="width:15px;height:15px"><use href="#i-arrow"/></svg></a></article>
+      <div class="afgrid">
+        <article class="afcard afc-indigo reveal">
+          <div class="afc-glow"></div>
+          <div class="afc-idx">004</div>
+          <div class="afc-art">
+            <svg viewBox="0 0 120 120" aria-hidden="true">
+              <circle class="plate" cx="60" cy="60" r="46"/>
+              <path d="M60 31 L89 47 L60 63 L31 47 Z" fill="currentColor"/>
+              <path d="M31 60 L60 76 L89 60" fill="none" stroke="currentColor" stroke-width="6" stroke-linejoin="round" stroke-linecap="round" opacity=".5"/>
+              <path d="M31 72 L60 88 L89 72" fill="none" stroke="currentColor" stroke-width="6" stroke-linejoin="round" stroke-linecap="round" opacity=".26"/>
+            </svg>
+          </div>
+          <div class="afc-body"><span class="afc-tag">Re-ground</span><h3>Re-grounds the agent</h3><p>Mission + a deduped, living memory re-injected as a fresh system block every model call.</p><a class="afc-link" href="product.html">See the product <svg aria-hidden="true"><use href="#i-arrow"/></svg></a></div>
+        </article>
+        <article class="afcard afc-amber reveal" data-reveal-delay="80">
+          <div class="afc-glow"></div>
+          <div class="afc-idx">005</div>
+          <div class="afc-art">
+            <svg viewBox="0 0 120 120" aria-hidden="true">
+              <circle class="plate" cx="60" cy="60" r="46"/>
+              <path d="M82 49 A26 26 0 1 0 86 64" fill="none" stroke="currentColor" stroke-width="7" stroke-linecap="round"/>
+              <path d="M80 34 l5 17 -17 -3 z" fill="currentColor"/>
+              <rect x="56.5" y="49" width="7" height="16" rx="3.5" fill="currentColor"/>
+              <circle cx="60" cy="71" r="4.2" fill="currentColor"/>
+            </svg>
+          </div>
+          <div class="afc-body"><span class="afc-tag">Guardrail</span><h3>Catches loops &amp; drift</h3><p>pgvector similarity flags repeats and tangents, then injects a corrective in real time.</p><a class="afc-link" href="why.html">Why it matters <svg aria-hidden="true"><use href="#i-arrow"/></svg></a></div>
+        </article>
+        <article class="afcard afc-teal reveal" data-reveal-delay="160">
+          <div class="afc-glow"></div>
+          <div class="afc-idx">006</div>
+          <div class="afc-art">
+            <svg viewBox="0 0 120 120" aria-hidden="true">
+              <circle class="plate" cx="60" cy="60" r="46"/>
+              <rect x="37" y="66" width="12" height="20" rx="3" fill="currentColor" opacity=".42"/>
+              <rect x="54" y="54" width="12" height="32" rx="3" fill="currentColor" opacity=".7"/>
+              <rect x="71" y="44" width="12" height="42" rx="3" fill="currentColor"/>
+              <circle cx="79" cy="40" r="14" fill="currentColor" stroke="#fff" stroke-width="3"/>
+              <path d="M79 33v14" stroke="#fff" stroke-width="2.4" stroke-linecap="round"/>
+              <path d="M82.5 36.6c0-1.9-1.7-2.9-3.6-2.9s-3.5 1-3.5 2.7 1.6 2.3 3.5 2.6 3.6.9 3.6 2.8-1.7 2.8-3.6 2.8-3.6-1.1-3.6-3" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round"/>
+            </svg>
+          </div>
+          <div class="afc-body"><span class="afc-tag">Observe</span><h3>Logs every token</h3><p>Each step, where it looped, and the exact token and dollar cost — visible per mission.</p><a class="afc-link" href="features.html">All features <svg aria-hidden="true"><use href="#i-arrow"/></svg></a></div>
+        </article>
       </div>
     </div>
   </section>
