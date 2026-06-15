@@ -156,20 +156,41 @@ Set per-mission in the `options` object at creation, or update with `PATCH`.
 
 Base: `https://<appkey>.functions.insforge.app/anchor`
 
-**Proxy**
+**Proxy** (Path 1 — base-URL + key swap; auto-anchored)
 - `POST /v1/chat/completions` — OpenAI-compatible (streaming + non-streaming).
 - `POST /v1/messages` — Anthropic-compatible (streaming + non-streaming; text + tools).
+
+**Agent context** (Path 2 — read the key directly; for agents that can't swap the base URL)
+- `GET /v1/context` — full bundle behind the key: `{ mission, current_step, memory, warnings, injection_block, guidance }`. Treat `injection_block` as authoritative system context.
+- `POST /v1/report` — report `{ action, result, outcome }` → updates memory, detects loop/drift, advances the plan, returns the refreshed `injection_block` + warnings.
+- `POST /v1/check` — pre-flight `{ action }` → `{ loop, drift, detail }` without recording.
+
+Also available as an **MCP server** (`anchor_get_context` / `anchor_report_step` / `anchor_check`) for Claude Code — see [`mcp/README.md`](mcp/README.md).
 
 **Control plane**
 - `POST /missions` — create a mission → `{ mission_id, api_key, base_url, … }`.
 - `GET /missions/:id` — status + memory + step timeline + spend (auth: `?key=` or Bearer).
 - `GET /missions/:id/steps?limit=&offset=` — paginated timeline.
 - `POST /missions/:id/memory` — manually add a memory item `{ type, content }`.
-- `PATCH /missions/:id` — update `status` / `options`.
-- `POST /missions/:id/keys` — rotate / add a key. `DELETE /missions/:id/keys/:keyId` — revoke.
+- `PATCH /missions/:id` — update `status` / `options`. `DELETE /missions/:id` — delete (cascades).
+- `GET/POST /missions/:id/keys`, `DELETE /missions/:id/keys/:keyId` — list / rotate / revoke keys.
+- `POST /refine` — sharpen a rough goal into `{ goal, constraints }` (Prompt Builder helper).
 
 Anchor stamps every proxied response with `x-anchor-loop`, `x-anchor-drift`,
 `x-anchor-intervened`, and `x-anchor-mission` headers.
+
+## Web console
+
+A light, OS-grade multi-page console lives in `web/` (vanilla JS, no build step).
+Run `npm run web` → open `http://localhost:8123`.
+
+- **Public:** a landing page (`/`) and `/docs`, plus **email/password auth** (`/signup`, `/login`)
+  backed by InsForge JWT. Every mission, key, step, and memory item is scoped to the signed-in user.
+- **App (signed in):** Dashboard (aggregate spend + loops), Missions, live **Monitor**
+  (memory, timeline, loops/drift, talk-to-your-agent, run-looping-demo), Prompt Builder,
+  **API Keys history** (every key with the mission it was for, status, last used, usage),
+  Integration (prefilled OpenAI / Claude Code / Direct / MCP snippets), and Settings.
+- ⌘K command palette. Protected routes redirect to `/login` when signed out.
 
 ---
 
@@ -222,11 +243,16 @@ Your base URL is `https://<appkey>.functions.insforge.app/anchor` (the appkey is
 ## Repo layout
 
 ```
-functions/anchor.ts     The whole proxy + control plane (one Deno edge function)
+functions/anchor.ts     Proxy + agent-context endpoints + control plane (one Deno edge function)
 migrations/             Postgres schema: tables, pgvector, similarity/stats RPCs
+web/                    Light multi-page operator console (index.html, styles.css, app.js, server.mjs)
+mcp/                    MCP server (anchor-mcp.mjs) + Claude Code config + setup README
 demo/demo.mjs           End-to-end demo via the OpenAI SDK
 demo/create-mission.mjs Helper: create a mission, print env exports
 scripts/calibrate.mjs   Threshold calibration probe (embedding cosine measurements)
+scripts/uitest.mjs      Headless (jsdom) render test for the web console
+scripts/mcptest.mjs     MCP stdio handshake + tool-call test
+scripts/acceptance.mjs  Part B end-to-end acceptance tests
 ```
 
 ## Security notes

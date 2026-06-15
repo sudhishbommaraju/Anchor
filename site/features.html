@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Features — Anchor</title>
+<meta name="description" content="Continuous memory injection, semantic loop and drift detection, live monitoring, BYOK, sequencing, and full per-mission control — everything Anchor does on every call." />
+<meta name="color-scheme" content="light" />
+<meta name="theme-color" content="#fcfbf9" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="preconnect" href="https://api.fontshare.com" crossorigin />
+<link rel="preconnect" href="https://cdn.fontshare.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@500;600;700;800;900&family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+<link href="https://api.fontshare.com/v2/css?f[]=satoshi@400,500,600,700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="styles.css" />
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%235e6ad2' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='5' r='3'/%3E%3Cline x1='12' y1='22' x2='12' y2='8'/%3E%3Cpath d='M5 12H2a10 10 0 0 0 20 0h-3'/%3E%3C/svg%3E" />
+</head>
+<body>
+
+<svg class="sprite" aria-hidden="true" focusable="false">
+  <symbol id="i-anchor" viewBox="0 0 24 24"><circle cx="12" cy="5" r="3"/><line x1="12" y1="22" x2="12" y2="8"/><path d="M5 12H2a10 10 0 0 0 20 0h-3"/></symbol>
+  <symbol id="i-arrow" viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></symbol>
+  <symbol id="i-x" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></symbol>
+  <symbol id="i-layers" viewBox="0 0 24 24"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></symbol>
+  <symbol id="i-target" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></symbol>
+  <symbol id="i-activity" viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></symbol>
+  <symbol id="i-plug" viewBox="0 0 24 24"><path d="M12 22v-5"/><path d="M9 8V2"/><path d="M15 8V2"/><path d="M18 8v5a4 4 0 0 1-4 4h-4a4 4 0 0 1-4-4V8Z"/></symbol>
+  <symbol id="i-key" viewBox="0 0 24 24"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/></symbol>
+  <symbol id="i-branch" viewBox="0 0 24 24"><line x1="6" y1="3" x2="6" y2="15"/><circle cx="18" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="M18 9a9 9 0 0 1-9 9"/></symbol>
+  <symbol id="i-menu" viewBox="0 0 24 24"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></symbol>
+  <symbol id="i-github" viewBox="0 0 24 24"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/></symbol>
+</svg>
+
+<a class="skip" href="#main">Skip to content</a>
+
+<header class="nav" id="nav">
+  <div class="nav-inner">
+    <a class="brand" href="index.html" aria-label="Anchor home"><svg class="brand-ic" aria-hidden="true"><use href="#i-anchor"/></svg><span>Anchor</span></a>
+    <nav class="nav-links" aria-label="Primary">
+      <a href="why.html">Why Anchor</a><a href="product.html">Product</a><a href="integrations.html">Integrations</a><a href="features.html" class="active">Features</a>
+    </nav>
+    <div class="nav-cta"><a class="btn ghost sm" data-cta="login" href="#">Sign in</a><a class="btn sm" data-cta="signup" href="#">Sign up</a></div>
+    <button class="nav-toggle" id="navToggle" aria-label="Open menu" aria-expanded="false"><svg aria-hidden="true"><use href="#i-menu"/></svg></button>
+  </div>
+  <div class="nav-mobile" id="navMobile" hidden>
+    <a href="why.html">Why Anchor</a><a href="product.html">Product</a><a href="integrations.html">Integrations</a><a href="features.html" class="active">Features</a>
+    <a href="https://github.com/sudhishbommaraju/Anchor" target="_blank" rel="noreferrer">GitHub</a>
+    <div class="nav-mobile-cta"><a class="btn ghost" data-cta="login" href="#">Sign in</a><a class="btn" data-cta="signup" href="#">Sign up</a></div>
+  </div>
+</header>
+
+<main id="main">
+  <section class="phero">
+    <div class="hero-bg" aria-hidden="true"></div>
+    <div class="phero-inner">
+      <span class="pill reveal"><span class="dot"></span> Features</span>
+      <h1 class="reveal" data-reveal-delay="60">Everything, <span class="grad">on every call.</span></h1>
+      <p class="lead reveal" data-reveal-delay="140">The full toolkit for keeping AI coding agents on task — continuous memory, semantic detection, live spend, and per-mission control.</p>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="wrap">
+      <div class="cards-feat">
+        <article class="fcard reveal"><span class="ic"><svg aria-hidden="true"><use href="#i-layers"/></svg></span><h3>Continuous memory injection</h3><p>Mission plus a deduped, living memory rebuilt and re-injected as a fresh system block on every model call.</p></article>
+        <article class="fcard reveal" data-reveal-delay="80"><span class="ic"><svg aria-hidden="true"><use href="#i-target"/></svg></span><h3>Semantic loop &amp; drift detection</h3><p>pgvector similarity catches repeats and off-task steps, then injects a corrective to re-ground the agent.</p></article>
+        <article class="fcard reveal" data-reveal-delay="160"><span class="ic"><svg aria-hidden="true"><use href="#i-activity"/></svg></span><h3>Live monitoring</h3><p>Watch tokens, cost, loops, and interventions update in real time — with the exact step where it looped.</p></article>
+        <article class="fcard reveal"><span class="ic"><svg aria-hidden="true"><use href="#i-plug"/></svg></span><h3>Drop-in everywhere</h3><p>Works with Claude Code, Cursor, and any OpenAI- or Anthropic-compatible agent — or read the key directly via REST/MCP.</p></article>
+        <article class="fcard reveal" data-reveal-delay="80"><span class="ic"><svg aria-hidden="true"><use href="#i-key"/></svg></span><h3>Bring your own key</h3><p>Bill calls to your own provider key with BYOK, or let Anchor route through the gateway — your choice, per mission.</p></article>
+        <article class="fcard reveal" data-reveal-delay="160"><span class="ic"><svg aria-hidden="true"><use href="#i-branch"/></svg></span><h3>Sequencing &amp; plan mode</h3><p>Optionally decompose the goal into ordered steps and feed them one at a time, so the agent advances a plan.</p></article>
+      </div>
+    </div>
+  </section>
+
+  <!-- CAPABILITY MATRIX -->
+  <section class="section soft">
+    <div class="wrap narrow">
+      <div class="sec-head center reveal"><h2>Why a layer beats a longer prompt.</h2><p class="sub">A one-shot system prompt fades as the conversation grows. Anchor acts on every call.</p></div>
+      <div class="matrix reveal">
+        <div class="mxr head"><div>Capability</div><div>Anchor</div><div>Plain prompt</div></div>
+        <div class="mxr"><div>Mission re-injected every call</div><div class="yes"><svg aria-hidden="true"><use href="#i-check"/></svg></div><div class="no"><svg aria-hidden="true"><use href="#i-x"/></svg></div></div>
+        <div class="mxr"><div>Semantic loop detection</div><div class="yes"><svg aria-hidden="true"><use href="#i-check"/></svg></div><div class="no"><svg aria-hidden="true"><use href="#i-x"/></svg></div></div>
+        <div class="mxr"><div>Drift correction mid-run</div><div class="yes"><svg aria-hidden="true"><use href="#i-check"/></svg></div><div class="no"><svg aria-hidden="true"><use href="#i-x"/></svg></div></div>
+        <div class="mxr"><div>Token + dollar logging</div><div class="yes"><svg aria-hidden="true"><use href="#i-check"/></svg></div><div class="no"><svg aria-hidden="true"><use href="#i-x"/></svg></div></div>
+        <div class="mxr"><div>Works across SDKs &amp; MCP</div><div class="yes"><svg aria-hidden="true"><use href="#i-check"/></svg></div><div class="no"><svg aria-hidden="true"><use href="#i-x"/></svg></div></div>
+        <div class="mxr"><div>BYOK billing per mission</div><div class="yes"><svg aria-hidden="true"><use href="#i-check"/></svg></div><div class="no"><svg aria-hidden="true"><use href="#i-x"/></svg></div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- OPTIONS -->
+  <section class="section">
+    <div class="wrap narrow">
+      <div class="sec-head center reveal"><h2>Sensible defaults, full control.</h2><p class="sub">Set these per mission at creation, or update them any time with a PATCH.</p></div>
+      <div class="opt-table reveal">
+        <div class="opt-row opt-head"><span>Option</span><span>Default</span><span>What it does</span></div>
+        <div class="opt-row"><span class="fm">autoCorrect</span><span class="fm v">true</span><span>Inject a corrective on loop/drift (off = alert-only, still logged)</span></div>
+        <div class="opt-row"><span class="fm">loopThreshold</span><span class="fm v">0.85</span><span>Loop if a recent step is this similar or more</span></div>
+        <div class="opt-row"><span class="fm">driftThreshold</span><span class="fm v">0.15</span><span>Drift if goal similarity is this low or less</span></div>
+        <div class="opt-row"><span class="fm">window</span><span class="fm v">8</span><span>How many recent steps to compare against</span></div>
+        <div class="opt-row"><span class="fm">sequencing</span><span class="fm v">false</span><span>Decompose the goal into ordered steps, fed one at a time</span></div>
+        <div class="opt-row"><span class="fm">byok</span><span class="fm v">null</span><span>Bill calls to your own provider key</span></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section cta">
+    <div class="wrap"><div class="panel reveal">
+      <svg class="cta-anchor" aria-hidden="true"><use href="#i-anchor"/></svg>
+      <h2>Put it all on your agent.</h2>
+      <p>Set the mission once. Anchor does the rest — on every call.</p>
+      <div class="hero-actions"><a class="btn lg" data-cta="signup" href="#">Sign up <svg aria-hidden="true"><use href="#i-arrow"/></svg></a><a class="btn ghost lg" href="https://github.com/sudhishbommaraju/Anchor" target="_blank" rel="noreferrer"><svg aria-hidden="true"><use href="#i-github"/></svg> View source</a></div>
+    </div></div>
+  </section>
+</main>
+
+<footer class="footer">
+  <div class="wrap foot-inner">
+    <div class="foot-brand"><a class="brand" href="index.html"><svg class="brand-ic" aria-hidden="true"><use href="#i-anchor"/></svg><span>Anchor</span></a><p>Set the mission once. Anchor keeps your agent on it.</p></div>
+    <nav class="foot-links" aria-label="Footer"><a href="why.html">Why Anchor</a><a href="product.html">Product</a><a href="integrations.html">Integrations</a><a href="features.html">Features</a><a data-cta="login" href="#">Sign in</a><a href="https://github.com/sudhishbommaraju/Anchor" target="_blank" rel="noreferrer">GitHub</a></nav>
+  </div>
+  <div class="wrap foot-bottom"><span>© <span id="year">2026</span> Anchor</span><span>Built on InsForge · Postgres + pgvector · OpenRouter · Deno edge functions</span></div>
+</footer>
+
+<script src="app.js" defer></script>
+</body>
+</html>

@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "anchor": {
+      "command": "node",
+      "args": ["REPLACE_WITH_ABSOLUTE_PATH/Anchor/mcp/anchor-mcp.mjs"],
+      "env": {
+        "ANCHOR_KEY": "anc_live_REPLACE_WITH_YOUR_MISSION_KEY",
+        "ANCHOR_API_BASE": "https://2ecpc69u.functions.insforge.app/anchor"
+      }
+    }
+  }
+}

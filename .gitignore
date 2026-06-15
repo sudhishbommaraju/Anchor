@@ -24,3 +24,10 @@ dist/
 build/
 *.log
 .DS_Store
+.gstack/
+
+# design handoff + scratch
+.design/
+.design.tgz
+.shots/
+.gstack/

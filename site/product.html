@@ -1,0 +1,224 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Product — Anchor</title>
+<meta name="description" content="See how Anchor works: mint a key from your mission, watch the live timeline, catch loops and drift, and log every token — across Claude Code, Cursor, and any SDK." />
+<meta name="color-scheme" content="light" />
+<meta name="theme-color" content="#fcfbf9" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="preconnect" href="https://api.fontshare.com" crossorigin />
+<link rel="preconnect" href="https://cdn.fontshare.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@500;600;700;800;900&family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+<link href="https://api.fontshare.com/v2/css?f[]=satoshi@400,500,600,700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="styles.css" />
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%235e6ad2' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='5' r='3'/%3E%3Cline x1='12' y1='22' x2='12' y2='8'/%3E%3Cpath d='M5 12H2a10 10 0 0 0 20 0h-3'/%3E%3C/svg%3E" />
+</head>
+<body>
+
+<svg class="sprite" aria-hidden="true" focusable="false">
+  <symbol id="i-anchor" viewBox="0 0 24 24"><circle cx="12" cy="5" r="3"/><line x1="12" y1="22" x2="12" y2="8"/><path d="M5 12H2a10 10 0 0 0 20 0h-3"/></symbol>
+  <symbol id="i-arrow" viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></symbol>
+  <symbol id="i-arrow-down" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><polyline points="19 12 12 19 5 12"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></symbol>
+  <symbol id="i-copy" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></symbol>
+  <symbol id="i-loop" viewBox="0 0 24 24"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></symbol>
+  <symbol id="i-terminal" viewBox="0 0 24 24"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></symbol>
+  <symbol id="i-layers" viewBox="0 0 24 24"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></symbol>
+  <symbol id="i-target" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></symbol>
+  <symbol id="i-key" viewBox="0 0 24 24"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/></symbol>
+  <symbol id="i-activity" viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></symbol>
+  <symbol id="i-code" viewBox="0 0 24 24"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></symbol>
+  <symbol id="i-database" viewBox="0 0 24 24"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></symbol>
+  <symbol id="i-menu" viewBox="0 0 24 24"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></symbol>
+  <symbol id="i-github" viewBox="0 0 24 24"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/></symbol>
+  <symbol id="i-pointer" viewBox="0 0 20 20"><path d="M3 2l13 6.3-5.1 1.5L8 16 3 2z" fill="#17181c" stroke="#fff" stroke-width="1.2" stroke-linejoin="round"/></symbol>
+</svg>
+
+<a class="skip" href="#main">Skip to content</a>
+
+<header class="nav" id="nav">
+  <div class="nav-inner">
+    <a class="brand" href="index.html" aria-label="Anchor home"><svg class="brand-ic" aria-hidden="true"><use href="#i-anchor"/></svg><span>Anchor</span></a>
+    <nav class="nav-links" aria-label="Primary">
+      <a href="why.html">Why Anchor</a><a href="product.html" class="active">Product</a><a href="integrations.html">Integrations</a><a href="features.html">Features</a>
+    </nav>
+    <div class="nav-cta"><a class="btn ghost sm" data-cta="login" href="#">Sign in</a><a class="btn sm" data-cta="signup" href="#">Sign up</a></div>
+    <button class="nav-toggle" id="navToggle" aria-label="Open menu" aria-expanded="false"><svg aria-hidden="true"><use href="#i-menu"/></svg></button>
+  </div>
+  <div class="nav-mobile" id="navMobile" hidden>
+    <a href="why.html">Why Anchor</a><a href="product.html" class="active">Product</a><a href="integrations.html">Integrations</a><a href="features.html">Features</a>
+    <a href="https://github.com/sudhishbommaraju/Anchor" target="_blank" rel="noreferrer">GitHub</a>
+    <div class="nav-mobile-cta"><a class="btn ghost" data-cta="login" href="#">Sign in</a><a class="btn" data-cta="signup" href="#">Sign up</a></div>
+  </div>
+</header>
+
+<main id="main">
+  <section class="phero">
+    <div class="hero-bg" aria-hidden="true"></div>
+    <div class="phero-inner">
+      <span class="pill reveal"><span class="dot"></span> The product</span>
+      <h1 class="reveal" data-reveal-delay="60">From a goal to <span class="grad">a running agent.</span></h1>
+      <p class="lead reveal" data-reveal-delay="140">Anchor sits between your agent and the model. Write your mission once, get a key, and every call is re-anchored — loops caught, drift corrected, spend logged.</p>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="wrap">
+      <!-- ROW 1 · KEY GRAPHIC -->
+      <div class="frow reveal">
+        <div class="fr-copy">
+          <h3>One mission. One key. Done.</h3>
+          <p>Write your goal and constraints once. Anchor mints a dedicated <code>anc_live_</code> key — point your agent at it, and the mission rides along on every request.</p>
+          <ul class="fr-list">
+            <li><svg aria-hidden="true"><use href="#i-check"/></svg> Key stored only as a sha-256 hash</li>
+            <li><svg aria-hidden="true"><use href="#i-check"/></svg> One base-URL swap — nothing else changes</li>
+          </ul>
+        </div>
+        <div class="mock" id="keygraphic" aria-hidden="true">
+          <div class="mock-bar"><span class="t"><i></i><i></i><i></i></span><span class="mock-title"><svg aria-hidden="true"><use href="#i-anchor"/></svg> New mission</span></div>
+          <div class="kg-body">
+            <div><span class="kg-lab">Goal</span><div class="kg-goal">Build a CLI todo app in Python with add / list / done</div></div>
+            <div class="kg-chips"><span>std-lib only</span><span>persist to todos.json</span></div>
+            <button class="kg-gen" id="kgGen" type="button">Generate API key</button>
+            <div class="kg-out" id="kgOut">
+              <div class="kg-key"><span class="k">anc_live_a3f0b9…c21d</span><svg class="kg-copy" aria-hidden="true"><use href="#i-copy"/></svg></div>
+              <div class="kg-arrow"><svg aria-hidden="true"><use href="#i-arrow-down"/></svg> point your agent at it</div>
+              <div class="kg-term">
+                <div class="ln"><span class="caret">▸</span> mission injected · re-anchored every call</div>
+                <div class="ln"><span class="tag ok">on track</span> agent → write the list command</div>
+              </div>
+            </div>
+            <div class="dcursor" aria-hidden="true"><svg viewBox="0 0 20 20"><use href="#i-pointer"/></svg></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ROW 2 · MONITOR -->
+      <div class="frow flip reveal">
+        <div class="fr-copy">
+          <h3>Every step, re-grounded.</h3>
+          <p>Anchor watches the agent's live timeline, flags repeats and tangents, and re-injects the mission the moment it slips.</p>
+          <ul class="fr-list">
+            <li><svg aria-hidden="true"><use href="#i-check"/></svg> Mission + deduped memory rebuilt on every request</li>
+            <li><svg aria-hidden="true"><use href="#i-check"/></svg> Loops &amp; drift caught semantically with pgvector</li>
+            <li><svg aria-hidden="true"><use href="#i-check"/></svg> Streaming and tools pass straight through</li>
+          </ul>
+        </div>
+        <div class="mock" id="monitor" aria-hidden="true">
+          <div class="mock-bar"><span class="t"><i></i><i></i><i></i></span><span class="mock-title"><svg aria-hidden="true"><use href="#i-anchor"/></svg> Mission · CLI Todo App</span><span class="mock-live"><span class="dot"></span>live</span></div>
+          <div class="mstats">
+            <div><div class="n" data-count="5934">0</div><div class="l">tokens</div></div>
+            <div><div class="n">$0.0019</div><div class="l">cost</div></div>
+            <div><div class="n" data-count="2">0</div><div class="l">loops</div></div>
+            <div><div class="n acc" data-count="3">0</div><div class="l">interventions</div></div>
+          </div>
+          <div class="mtl" id="timeline">
+            <div class="mrow"><span class="seq">#07</span><span class="tag ok">on track</span><span class="tx">write the list command</span></div>
+            <div class="mrow"><span class="seq">#09</span><span class="tag loop">loop 100%</span><span class="tx">repeat: fix JSONDecodeError</span></div>
+            <div class="mrow focusrow"><span class="seq">#10</span><span class="tag anchor"><svg aria-hidden="true"><use href="#i-anchor"/></svg> stepped in</span><span class="tx">re-grounded</span></div>
+            <div class="mrow"><span class="seq">#13</span><span class="tag drift">drift</span><span class="tx">"best pizza toppings?"</span></div>
+            <div class="mrow"><span class="seq">#14</span><span class="tag ok">on track</span><span class="tx">add the done() command</span></div>
+          </div>
+          <div class="dcursor" aria-hidden="true"><svg viewBox="0 0 20 20"><use href="#i-pointer"/></svg></div>
+        </div>
+      </div>
+
+      <!-- ROW 3 · WORK -->
+      <div class="frow reveal">
+        <div class="fr-copy">
+          <h3>It catches the loop, then does the work.</h3>
+          <p>A repeated step (cosine ≥ 0.85) is a loop; an off-goal step (≤ 0.15 to the goal) is drift. Anchor embeds the step, queries pgvector, and injects a corrective — before the model ever sees it.</p>
+          <ul class="fr-list">
+            <li><svg aria-hidden="true"><use href="#i-check"/></svg> Thresholds calibrated empirically, not guessed</li>
+            <li><svg aria-hidden="true"><use href="#i-check"/></svg> Auto-correct, or alert-only — your call per mission</li>
+          </ul>
+        </div>
+        <div class="mock" id="work" aria-hidden="true">
+          <div class="work">
+            <div class="whead"><span class="dot"></span> Anchor · re-anchoring <span class="ago">2.1s</span></div>
+            <div class="bubble me">Loop detected at step #9 — cosine 0.91 to a recent action.</div>
+            <div class="bubble">On it. Re-grounding the agent across the pipeline:</div>
+            <div class="witem"><span class="ic done"><svg aria-hidden="true"><use href="#i-check"/></svg></span><span><b>Embedded</b> current step — text-embedding-3-small</span></div>
+            <div class="witem"><span class="ic done"><svg aria-hidden="true"><use href="#i-check"/></svg></span><span><b>Queried</b> pgvector — matched recent action @ 0.91</span></div>
+            <div class="witem"><span class="ic done"><svg aria-hidden="true"><use href="#i-check"/></svg></span><span><b>Rebuilt</b> system block — mission + memory + corrective</span></div>
+            <div class="witem"><span class="ic run"><svg aria-hidden="true"><use href="#i-loop"/></svg></span><span><b>Forwarding</b> to model — stream passthrough</span></div>
+            <div class="wbar"><i></i></div><div class="wbar-l">3 of 4 complete</div>
+          </div>
+          <div class="dcursor" aria-hidden="true"><svg viewBox="0 0 20 20"><use href="#i-pointer"/></svg></div>
+        </div>
+      </div>
+
+      <!-- ROW 4 · ANALYTICS -->
+      <div class="frow flip reveal">
+        <div class="fr-copy">
+          <h3>Your spend, in the open.</h3>
+          <p>Every step, the memory state, where it looped, and the exact token and dollar cost — logged and visible in real time, per mission.</p>
+          <ul class="fr-list">
+            <li><svg aria-hidden="true"><use href="#i-check"/></svg> Real cost from the gateway — no pricing guesswork</li>
+            <li><svg aria-hidden="true"><use href="#i-check"/></svg> Loops, drifts, and interventions tallied per run</li>
+          </ul>
+        </div>
+        <div class="mock" id="analytics" aria-hidden="true">
+          <div class="an">
+            <div class="an-head"><span class="ttl">Insights &amp; spend</span><span class="pillset"><span>All missions</span><span>Last 7 days</span></span></div>
+            <div class="an-tiles">
+              <div class="tile"><div class="tl">Steps</div><div class="tn">1,284</div></div>
+              <div class="tile"><div class="tl">Loops caught</div><div class="tn">37</div></div>
+              <div class="tile"><div class="tl">Saved</div><div class="tn">$48</div></div>
+            </div>
+            <div class="an-metric"><span class="b">On-mission rate</span><span class="o">Tokens</span><span class="o">Cost</span></div>
+            <div class="an-big">94.2%</div>
+            <div class="an-chart">
+              <svg width="100%" height="92" viewBox="0 0 460 92" preserveAspectRatio="none" aria-hidden="true">
+                <defs><linearGradient id="g" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#5e6ad2" stop-opacity=".18"/><stop offset="1" stop-color="#5e6ad2" stop-opacity="0"/></linearGradient></defs>
+                <path d="M0 74 C60 70 90 60 140 56 C200 51 240 44 300 34 C360 25 410 20 460 12 L460 92 L0 92 Z" fill="url(#g)"/>
+                <path d="M0 74 C60 70 90 60 140 56 C200 51 240 44 300 34 C360 25 410 20 460 12" stroke="#5e6ad2" stroke-width="2.5" fill="none"/>
+              </svg>
+              <span class="an-point"></span><span class="an-tip">94.2% · $48 saved</span>
+            </div>
+          </div>
+          <div class="dcursor" aria-hidden="true"><svg viewBox="0 0 20 20"><use href="#i-pointer"/></svg></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PIPELINE -->
+  <section class="section soft">
+    <div class="wrap">
+      <div class="sec-head center reveal"><h2>What happens on every call.</h2><p class="sub">One request in, one response out — and six things in between, every single time.</p></div>
+      <div class="pipeline">
+        <div class="pstep reveal"><span class="pn">01</span><span class="pi"><svg aria-hidden="true"><use href="#i-key"/></svg></span><h3>Authenticate the key</h3><p>The <code>anc_live_</code> key (sha-256 hash) resolves to your mission.</p></div>
+        <div class="pstep reveal" data-reveal-delay="60"><span class="pn">02</span><span class="pi"><svg aria-hidden="true"><use href="#i-layers"/></svg></span><h3>Embed the step</h3><p>The latest action is embedded with <code>text-embedding-3-small</code>.</p></div>
+        <div class="pstep reveal" data-reveal-delay="120"><span class="pn">03</span><span class="pi"><svg aria-hidden="true"><use href="#i-target"/></svg></span><h3>Detect loop &amp; drift</h3><p>One pgvector query vs recent steps and the goal.</p></div>
+        <div class="pstep reveal" data-reveal-delay="180"><span class="pn">04</span><span class="pi"><svg aria-hidden="true"><use href="#i-anchor"/></svg></span><h3>Inject system block</h3><p>Mission + live memory + a corrective if something was caught.</p></div>
+        <div class="pstep reveal" data-reveal-delay="240"><span class="pn">05</span><span class="pi"><svg aria-hidden="true"><use href="#i-code"/></svg></span><h3>Forward to model</h3><p>OpenRouter or your BYOK key. Streaming passes through.</p></div>
+        <div class="pstep reveal" data-reveal-delay="300"><span class="pn">06</span><span class="pi"><svg aria-hidden="true"><use href="#i-database"/></svg></span><h3>Update &amp; log</h3><p>Store the step + embedding, dedupe memory, record spend.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section cta">
+    <div class="wrap"><div class="panel reveal">
+      <svg class="cta-anchor" aria-hidden="true"><use href="#i-anchor"/></svg>
+      <h2>See it on your agent.</h2>
+      <p>Set the mission once. Anchor does the rest — on every call.</p>
+      <div class="hero-actions"><a class="btn lg" data-cta="signup" href="#">Sign up <svg aria-hidden="true"><use href="#i-arrow"/></svg></a><a class="btn ghost lg" href="integrations.html">See integrations</a></div>
+    </div></div>
+  </section>
+</main>
+
+<footer class="footer">
+  <div class="wrap foot-inner">
+    <div class="foot-brand"><a class="brand" href="index.html"><svg class="brand-ic" aria-hidden="true"><use href="#i-anchor"/></svg><span>Anchor</span></a><p>Set the mission once. Anchor keeps your agent on it.</p></div>
+    <nav class="foot-links" aria-label="Footer"><a href="why.html">Why Anchor</a><a href="product.html">Product</a><a href="integrations.html">Integrations</a><a href="features.html">Features</a><a data-cta="login" href="#">Sign in</a><a href="https://github.com/sudhishbommaraju/Anchor" target="_blank" rel="noreferrer">GitHub</a></nav>
+  </div>
+  <div class="wrap foot-bottom"><span>© <span id="year">2026</span> Anchor</span><span>Built on InsForge · Postgres + pgvector · OpenRouter · Deno edge functions</span></div>
+</footer>
+
+<script src="app.js" defer></script>
+</body>
+</html>

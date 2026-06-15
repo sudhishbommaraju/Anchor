@@ -1,0 +1,148 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Integrations — Anchor</title>
+<meta name="description" content="Anchor drops into Claude Code, Cursor, the OpenAI and Anthropic SDKs, MCP, or any REST client. Swap the base URL and key — nothing else changes." />
+<meta name="color-scheme" content="light" />
+<meta name="theme-color" content="#fcfbf9" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="preconnect" href="https://api.fontshare.com" crossorigin />
+<link rel="preconnect" href="https://cdn.fontshare.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@500;600;700;800;900&family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+<link href="https://api.fontshare.com/v2/css?f[]=satoshi@400,500,600,700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="styles.css" />
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%235e6ad2' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='5' r='3'/%3E%3Cline x1='12' y1='22' x2='12' y2='8'/%3E%3Cpath d='M5 12H2a10 10 0 0 0 20 0h-3'/%3E%3C/svg%3E" />
+</head>
+<body>
+
+<svg class="sprite" aria-hidden="true" focusable="false">
+  <symbol id="i-anchor" viewBox="0 0 24 24"><circle cx="12" cy="5" r="3"/><line x1="12" y1="22" x2="12" y2="8"/><path d="M5 12H2a10 10 0 0 0 20 0h-3"/></symbol>
+  <symbol id="i-arrow" viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></symbol>
+  <symbol id="i-terminal" viewBox="0 0 24 24"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></symbol>
+  <symbol id="i-code" viewBox="0 0 24 24"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></symbol>
+  <symbol id="i-plug" viewBox="0 0 24 24"><path d="M12 22v-5"/><path d="M9 8V2"/><path d="M15 8V2"/><path d="M18 8v5a4 4 0 0 1-4 4h-4a4 4 0 0 1-4-4V8Z"/></symbol>
+  <symbol id="i-branch" viewBox="0 0 24 24"><line x1="6" y1="3" x2="6" y2="15"/><circle cx="18" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="M18 9a9 9 0 0 1-9 9"/></symbol>
+  <symbol id="i-database" viewBox="0 0 24 24"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></symbol>
+  <symbol id="i-bolt" viewBox="0 0 24 24"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></symbol>
+  <symbol id="i-menu" viewBox="0 0 24 24"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></symbol>
+  <symbol id="i-github" viewBox="0 0 24 24"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/></symbol>
+</svg>
+
+<a class="skip" href="#main">Skip to content</a>
+
+<header class="nav" id="nav">
+  <div class="nav-inner">
+    <a class="brand" href="index.html" aria-label="Anchor home"><svg class="brand-ic" aria-hidden="true"><use href="#i-anchor"/></svg><span>Anchor</span></a>
+    <nav class="nav-links" aria-label="Primary">
+      <a href="why.html">Why Anchor</a><a href="product.html">Product</a><a href="integrations.html" class="active">Integrations</a><a href="features.html">Features</a>
+    </nav>
+    <div class="nav-cta"><a class="btn ghost sm" data-cta="login" href="#">Sign in</a><a class="btn sm" data-cta="signup" href="#">Sign up</a></div>
+    <button class="nav-toggle" id="navToggle" aria-label="Open menu" aria-expanded="false"><svg aria-hidden="true"><use href="#i-menu"/></svg></button>
+  </div>
+  <div class="nav-mobile" id="navMobile" hidden>
+    <a href="why.html">Why Anchor</a><a href="product.html">Product</a><a href="integrations.html" class="active">Integrations</a><a href="features.html">Features</a>
+    <a href="https://github.com/sudhishbommaraju/Anchor" target="_blank" rel="noreferrer">GitHub</a>
+    <div class="nav-mobile-cta"><a class="btn ghost" data-cta="login" href="#">Sign in</a><a class="btn" data-cta="signup" href="#">Sign up</a></div>
+  </div>
+</header>
+
+<main id="main">
+  <section class="phero">
+    <div class="hero-bg" aria-hidden="true"></div>
+    <div class="phero-inner">
+      <span class="pill reveal"><span class="dot"></span> Integrations</span>
+      <h1 class="reveal" data-reveal-delay="60">Works with <span class="grad">what you already use.</span></h1>
+      <p class="lead reveal" data-reveal-delay="140">Anchor speaks the OpenAI and Anthropic wire formats and ships an MCP server. Point your tool at it with a base-URL + key swap — or read the key directly over REST.</p>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="wrap">
+      <div class="intg">
+        <article class="icard reveal"><div class="ih"><span class="ig"><svg aria-hidden="true"><use href="#i-terminal"/></svg></span><div><h3>Claude Code</h3><span class="tagm">ANTHROPIC_BASE_URL</span></div></div><p>Set the base URL and auth token; Anchor speaks <code>/v1/messages</code> with tools and streaming.</p></article>
+        <article class="icard reveal" data-reveal-delay="60"><div class="ih"><span class="ig"><svg aria-hidden="true"><use href="#i-code"/></svg></span><div><h3>Cursor</h3><span class="tagm">OpenAI-compatible</span></div></div><p>Drop Anchor's base URL into Cursor's model settings and keep working as normal.</p></article>
+        <article class="icard reveal" data-reveal-delay="120"><div class="ih"><span class="ig"><svg aria-hidden="true"><use href="#i-plug"/></svg></span><div><h3>OpenAI SDK</h3><span class="tagm">/v1/chat/completions</span></div></div><p>Change <code>baseURL</code> + <code>apiKey</code>. Streaming and tool calls pass straight through.</p></article>
+        <article class="icard reveal"><div class="ih"><span class="ig"><svg aria-hidden="true"><use href="#i-bolt"/></svg></span><div><h3>Anthropic SDK</h3><span class="tagm">/v1/messages</span></div></div><p>Point the SDK at Anchor; text and tool use, streaming and non-streaming, all supported.</p></article>
+        <article class="icard reveal" data-reveal-delay="60"><div class="ih"><span class="ig"><svg aria-hidden="true"><use href="#i-branch"/></svg></span><div><h3>MCP server</h3><span class="tagm">anchor_get_context</span></div></div><p>Expose <code>get_context</code>, <code>report_step</code>, and <code>check</code> as tools to any MCP client.</p></article>
+        <article class="icard reveal" data-reveal-delay="120"><div class="ih"><span class="ig"><svg aria-hidden="true"><use href="#i-database"/></svg></span><div><h3>Direct REST</h3><span class="tagm">/v1/context</span></div></div><p>Can't swap the base URL? Read the key directly and treat <code>injection_block</code> as system context.</p></article>
+      </div>
+    </div>
+  </section>
+
+  <section class="section soft">
+    <div class="wrap">
+      <div class="sec-head center reveal"><h2>The only change you make.</h2><p class="sub">Swap the base URL and key. That's it — everything else about your agent stays exactly the same.</p></div>
+      <div class="code-card reveal">
+        <div class="tabs" role="tablist" aria-label="Integration">
+          <button class="tab on" role="tab" aria-selected="true" data-tab="openai">OpenAI / Cursor</button>
+          <button class="tab" role="tab" aria-selected="false" data-tab="claude">Claude Code</button>
+          <button class="tab" role="tab" aria-selected="false" data-tab="rest">Direct REST</button>
+          <button class="tab" role="tab" aria-selected="false" data-tab="mcp">MCP</button>
+        </div>
+        <div class="code-body">
+<pre class="code-pane on" data-pane="openai"><span class="c-cm"># Point any OpenAI-compatible tool at Anchor</span>
+<span class="c-kw">export</span> OPENAI_BASE_URL=<span class="c-st">"https://&lt;appkey&gt;.functions.insforge.app/anchor/v1"</span>
+<span class="c-kw">export</span> OPENAI_API_KEY=<span class="c-st">"anc_live_…"</span>
+
+<span class="c-cm"># …then use the SDK exactly as normal — streaming &amp; tools pass through</span>
+<span class="c-kw">import</span> OpenAI <span class="c-kw">from</span> <span class="c-st">'openai'</span>;
+<span class="c-kw">const</span> client = <span class="c-kw">new</span> <span class="c-fn">OpenAI</span>({ baseURL: process.env.OPENAI_BASE_URL, apiKey: process.env.OPENAI_API_KEY });</pre>
+<pre class="code-pane" data-pane="claude" hidden><span class="c-cm"># Claude Code / Anthropic SDK</span>
+<span class="c-kw">export</span> ANTHROPIC_BASE_URL=<span class="c-st">"https://&lt;appkey&gt;.functions.insforge.app/anchor"</span>
+<span class="c-kw">export</span> ANTHROPIC_AUTH_TOKEN=<span class="c-st">"anc_live_…"</span>
+
+<span class="c-cm"># Anchor speaks /v1/messages — text + tools, streaming &amp; non-streaming</span></pre>
+<pre class="code-pane" data-pane="rest" hidden><span class="c-cm"># Any agent that can't swap its base URL: read the key directly</span>
+<span class="c-fn">curl</span> https://&lt;appkey&gt;.functions.insforge.app/anchor/v1/context \
+  -H <span class="c-st">"authorization: Bearer anc_live_…"</span>
+
+<span class="c-cm"># → { mission, current_step, memory, warnings, injection_block, guidance }</span></pre>
+<pre class="code-pane" data-pane="mcp" hidden><span class="c-cm"># As an MCP server for Claude Code</span>
+anchor_get_context   <span class="c-cm"># full mission + memory + warnings</span>
+anchor_report_step   <span class="c-cm"># report an action → updated context</span>
+anchor_check         <span class="c-cm"># pre-flight a step for loop/drift</span></pre>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="wrap">
+      <div class="sec-head center reveal"><h2>How the request flows.</h2><p class="sub">Your agent talks to Anchor; Anchor talks to the model and your data. Nothing else to run.</p></div>
+      <div class="arch reveal">
+        <div class="arch-row">
+          <div class="arch-node"><svg aria-hidden="true"><use href="#i-code"/></svg><span>Agent</span><small>Claude Code · Cursor · SDK</small></div>
+          <div class="arch-flow"><span class="arch-line"></span><span class="arch-cap">base_url + key</span></div>
+          <div class="arch-node accent"><svg aria-hidden="true"><use href="#i-anchor"/></svg><span>Anchor edge fn</span><small>authenticate · embed · detect · inject · forward · log</small></div>
+          <div class="arch-flow"><span class="arch-line"></span></div>
+          <div class="arch-node"><svg aria-hidden="true"><use href="#i-database"/></svg><span>InsForge</span><small>Postgres + pgvector · OpenRouter</small></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section cta">
+    <div class="wrap"><div class="panel reveal">
+      <svg class="cta-anchor" aria-hidden="true"><use href="#i-anchor"/></svg>
+      <h2>Connect your agent.</h2>
+      <p>One base-URL swap. Streaming and tools just keep working.</p>
+      <div class="hero-actions"><a class="btn lg" data-cta="signup" href="#">Sign up <svg aria-hidden="true"><use href="#i-arrow"/></svg></a><a class="btn ghost lg" href="features.html">See all features</a></div>
+    </div></div>
+  </section>
+</main>
+
+<footer class="footer">
+  <div class="wrap foot-inner">
+    <div class="foot-brand"><a class="brand" href="index.html"><svg class="brand-ic" aria-hidden="true"><use href="#i-anchor"/></svg><span>Anchor</span></a><p>Set the mission once. Anchor keeps your agent on it.</p></div>
+    <nav class="foot-links" aria-label="Footer"><a href="why.html">Why Anchor</a><a href="product.html">Product</a><a href="integrations.html">Integrations</a><a href="features.html">Features</a><a data-cta="login" href="#">Sign in</a><a href="https://github.com/sudhishbommaraju/Anchor" target="_blank" rel="noreferrer">GitHub</a></nav>
+  </div>
+  <div class="wrap foot-bottom"><span>© <span id="year">2026</span> Anchor</span><span>Built on InsForge · Postgres + pgvector · OpenRouter · Deno edge functions</span></div>
+</footer>
+
+<script src="app.js" defer></script>
+</body>
+</html>

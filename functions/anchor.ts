@@ -198,7 +198,7 @@ type Mission = {
   options: Record<string, unknown>;
 };
 
-async function resolveMissionFromKey(key: string): Promise<Mission | null> {
+async function resolveMissionFromKey(key: string, touch = false): Promise<Mission | null> {
   if (!key || !key.startsWith('anc_')) return null;
   const hash = await sha256hex(key);
   const db = admin();
@@ -214,6 +214,10 @@ async function resolveMissionFromKey(key: string): Promise<Mission | null> {
     .select('id, user_id, goal, constraints, status, memory_summary, options')
     .eq('id', (keyRow as { mission_id: string }).mission_id)
     .maybeSingle();
+  if (mission && touch) {
+    // fire-and-forget usage bump (only on /v1/* calls, not control-plane reads)
+    db.rpc('anchor_touch_key', { p_hash: hash }).then(() => {}, () => {});
+  }
   return (mission as Mission) ?? null;
 }
 
@@ -630,7 +634,7 @@ async function handleChatCompletions(req: Request): Promise<Response> {
 
   let mission: Mission | null;
   try {
-    mission = await resolveMissionFromKey(key);
+    mission = await resolveMissionFromKey(key, true);
   } catch (_e) {
     mission = null;
   }
@@ -914,7 +918,7 @@ async function handleMessages(req: Request): Promise<Response> {
   if (!key) return anthropicError('Missing API key. Pass your Anchor key via x-api-key or Authorization.', 401, 'authentication_error');
   let mission: Mission | null;
   try {
-    mission = await resolveMissionFromKey(key);
+    mission = await resolveMissionFromKey(key, true);
   } catch {
     mission = null;
   }
@@ -1074,6 +1078,139 @@ async function handleMessages(req: Request): Promise<Response> {
   });
 }
 
+// ─────────────────── Path 2: explicit context retrieval (key-read) ───────────────────
+// For agents that can't swap their base URL: read the mission's full context behind the
+// key, act, then report — closing the same anchoring loop without the proxy.
+
+async function reloadMission(id: string): Promise<Mission | null> {
+  const { data } = await admin()
+    .from('missions')
+    .select('id, user_id, goal, constraints, status, memory_summary, options')
+    .eq('id', id)
+    .maybeSingle();
+  return (data as Mission) ?? null;
+}
+
+async function lastFlaggedStep(id: string): Promise<{ loop_flag?: boolean; loop_similarity?: number; drift_flag?: boolean; drift_similarity?: number } | null> {
+  const { data } = await admin()
+    .from('steps')
+    .select('loop_flag, loop_similarity, drift_flag, drift_similarity')
+    .eq('mission_id', id)
+    .eq('role', 'agent_request')
+    .order('seq', { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  return (data as { loop_flag?: boolean; loop_similarity?: number; drift_flag?: boolean; drift_similarity?: number }) ?? null;
+}
+
+async function advancePlan(id: string): Promise<void> {
+  const db = admin();
+  const { data: cur } = await db.from('plan_steps').select('id').eq('mission_id', id).eq('status', 'active').order('ord', { ascending: true }).limit(1).maybeSingle();
+  if (!cur) return;
+  await db.from('plan_steps').update({ status: 'done' }).eq('id', (cur as { id: string }).id);
+  const { data: next } = await db.from('plan_steps').select('id').eq('mission_id', id).eq('status', 'pending').order('ord', { ascending: true }).limit(1).maybeSingle();
+  if (next) await db.from('plan_steps').update({ status: 'active' }).eq('id', (next as { id: string }).id);
+}
+
+function pct(x: number | null | undefined): number { return Math.round((x || 0) * 100); }
+
+async function handleContext(req: Request): Promise<Response> {
+  const key = bearer(req);
+  if (!key) return json({ error: 'Missing Anchor API key.' }, 401);
+  const mission = await resolveMissionFromKey(key, true).catch(() => null);
+  if (!mission) return json({ error: 'Invalid or revoked Anchor API key.' }, 401);
+  const opts = mergedOptions(mission);
+  const [memItems, planStep, last] = await Promise.all([
+    fetchInjectionMemory(mission.id, null),
+    opts.sequencing ? activePlanStep(mission.id) : Promise.resolve(null),
+    lastFlaggedStep(mission.id),
+  ]);
+  const block = buildInjectedBlock(mission, mission.memory_summary, memItems, planStep, EMPTY_DETECTION, !!opts.autoCorrect);
+  const warnings: Array<{ type: string; detail: string }> = [];
+  if (last?.loop_flag) warnings.push({ type: 'loop', detail: `Your previous step repeated a recent action (similarity ${pct(last.loop_similarity)}%). Do not repeat it.` });
+  if (last?.drift_flag) warnings.push({ type: 'drift', detail: `Your previous step drifted off the mission. Refocus on the goal.` });
+  return json({
+    mission: { goal: mission.goal, constraints: mission.constraints, status: mission.status },
+    current_step: planStep ? { instruction: planStep } : null,
+    memory: { summary: mission.memory_summary, items: memItems },
+    warnings,
+    injection_block: block,
+    guidance: 'Read injection_block and treat it as authoritative system context. When you finish a step, POST {action,result,outcome} to /v1/report to update memory and receive refreshed context. Pre-flight an idea with POST {action} to /v1/check.',
+  });
+}
+
+async function handleReport(req: Request): Promise<Response> {
+  const key = bearer(req);
+  if (!key) return json({ error: 'Missing Anchor API key.' }, 401);
+  const mission = await resolveMissionFromKey(key, true).catch(() => null);
+  if (!mission) return json({ error: 'Invalid or revoked Anchor API key.' }, 401);
+  let body: Record<string, unknown>;
+  try { body = await req.json(); } catch { return json({ error: 'Body must be valid JSON.' }, 400); }
+  const action = typeof body.action === 'string' ? body.action.trim() : '';
+  if (!action) return json({ error: 'action is required.' }, 400);
+  const result = typeof body.result === 'string' ? body.result : '';
+  const outcome = typeof body.outcome === 'string' ? body.outcome : '';
+
+  const opts = mergedOptions(mission);
+  const incomingEmbedding = await embed(action);
+  let det: Detection = EMPTY_DETECTION;
+  if (incomingEmbedding) det = await detect(mission.id, incomingEmbedding, Number(opts.window) || 8, Number(opts.loopThreshold) || 0.85, Number(opts.driftThreshold) || 0.15);
+  const intervened = !!opts.autoCorrect && (det.loop || det.drift);
+  const responseText = [result, outcome ? 'Outcome: ' + outcome : ''].filter(Boolean).join('\n');
+
+  await postProcess({ mission, incomingText: action, incomingEmbedding, responseText, model: 'anchor-report', usage: null, det, intervened, injectedPreview: '' });
+
+  if (opts.sequencing && (body.step_complete === true || /\b(done|complete|completed|finished|works|passing|fixed)\b/i.test(outcome))) {
+    await advancePlan(mission.id).catch(() => {});
+  }
+
+  const fresh = (await reloadMission(mission.id)) || mission;
+  const [memItems, planStep] = await Promise.all([
+    fetchInjectionMemory(mission.id, incomingEmbedding),
+    opts.sequencing ? activePlanStep(mission.id) : Promise.resolve(null),
+  ]);
+  const block = buildInjectedBlock(fresh, fresh.memory_summary, memItems, planStep, det, !!opts.autoCorrect);
+  const warnings: Array<{ type: string; detail: string }> = [];
+  if (det.loop) warnings.push({ type: 'loop', detail: `You repeated "${truncate(det.match?.content || '', 120)}" (similarity ${pct(det.loopSimilarity)}%). You already tried this${det.priorOutcome ? '; result: ' + truncate(det.priorOutcome, 160) : ''}. Do something different.` });
+  if (det.drift) warnings.push({ type: 'drift', detail: `That step drifted from the mission (goal relevance ${pct(det.driftSimilarity)}%). Refocus on the goal.` });
+
+  return json({
+    recorded: true,
+    detection: { loop: det.loop, drift: det.drift, loop_similarity: det.loopSimilarity, drift_similarity: det.driftSimilarity, intervened },
+    warnings,
+    current_step: planStep ? { instruction: planStep } : null,
+    memory: { summary: fresh.memory_summary, items: memItems },
+    injection_block: block,
+    guidance: 'Follow injection_block. Keep going until the mission is complete, reporting each step.',
+  });
+}
+
+async function handleCheck(req: Request): Promise<Response> {
+  const key = bearer(req);
+  if (!key) return json({ error: 'Missing Anchor API key.' }, 401);
+  const mission = await resolveMissionFromKey(key, true).catch(() => null);
+  if (!mission) return json({ error: 'Invalid or revoked Anchor API key.' }, 401);
+  let body: Record<string, unknown>;
+  try { body = await req.json(); } catch { return json({ error: 'Body must be valid JSON.' }, 400); }
+  const action = typeof body.action === 'string' ? body.action.trim() : '';
+  if (!action) return json({ error: 'action is required.' }, 400);
+  const opts = mergedOptions(mission);
+  const emb = await embed(action);
+  let det: Detection = EMPTY_DETECTION;
+  if (emb) det = await detect(mission.id, emb, Number(opts.window) || 8, Number(opts.loopThreshold) || 0.85, Number(opts.driftThreshold) || 0.15);
+  return json({
+    loop: det.loop,
+    drift: det.drift,
+    loop_similarity: det.loopSimilarity,
+    drift_similarity: det.driftSimilarity,
+    detail: det.loop
+      ? `This repeats a recent action (similarity ${pct(det.loopSimilarity)}%) — try a different approach.`
+      : det.drift
+        ? `This looks off-mission (goal relevance ${pct(det.driftSimilarity)}%) — refocus on the goal.`
+        : 'OK — novel and on-task.',
+  });
+}
+
 // ───────────────────────────── control plane ─────────────────────────────
 
 async function maybeUserId(req: Request): Promise<string | null> {
@@ -1100,6 +1237,7 @@ async function createMission(req: Request): Promise<Response> {
 
   const constraints = Array.isArray(body.constraints) ? (body.constraints as string[]).filter((c) => typeof c === 'string') : [];
   const options = { ...DEFAULT_OPTIONS, ...((body.options as Record<string, unknown>) || {}) };
+  const name = typeof body.name === 'string' && body.name.trim() ? body.name.trim().slice(0, 80) : goal.slice(0, 48);
   const userId = await maybeUserId(req);
 
   const db = admin();
@@ -1111,6 +1249,7 @@ async function createMission(req: Request): Promise<Response> {
     .insert([
       {
         user_id: userId,
+        name,
         goal,
         constraints,
         options,
@@ -1118,7 +1257,7 @@ async function createMission(req: Request): Promise<Response> {
         memory_summary: '',
       },
     ])
-    .select('id, goal, options, created_at');
+    .select('id, name, goal, options, created_at');
   if (mErr || !missionRows?.length) return json({ error: 'Failed to create mission: ' + String(mErr) }, 500);
   const mission = (missionRows as Array<{ id: string }>)[0];
 
@@ -1142,6 +1281,7 @@ async function createMission(req: Request): Promise<Response> {
   return json(
     {
       mission_id: mission.id,
+      name,
       api_key: apiKey, // shown ONCE
       key_prefix: keyPrefix,
       base_url: urls.openai,
@@ -1204,7 +1344,7 @@ async function getMission(req: Request, missionId: string, url: URL): Promise<Re
   const db = admin();
   const { data: mission } = await db
     .from('missions')
-    .select('id, goal, constraints, status, memory_summary, options, created_at, updated_at')
+    .select('id, name, goal, constraints, status, memory_summary, options, created_at, updated_at')
     .eq('id', missionId)
     .maybeSingle();
   if (!mission) return json({ error: 'Mission not found.' }, 404);
@@ -1303,6 +1443,108 @@ async function revokeKey(req: Request, missionId: string, keyId: string, url: UR
   return json({ revoked: true, key_id: keyId });
 }
 
+async function listKeys(req: Request, missionId: string, url: URL): Promise<Response> {
+  if (!(await authorizeMission(req, missionId, url))) return json({ error: 'Unauthorized.' }, 401);
+  const { data } = await admin()
+    .from('api_keys')
+    .select('id, key_prefix, label, revoked, created_at')
+    .eq('mission_id', missionId)
+    .order('created_at', { ascending: true });
+  return json({ keys: data || [] });
+}
+
+async function deleteMission(req: Request, missionId: string, url: URL): Promise<Response> {
+  if (!(await authorizeMission(req, missionId, url))) return json({ error: 'Unauthorized.' }, 401);
+  const { error } = await admin().from('missions').delete().eq('id', missionId); // FK cascades keys/steps/memory/plan
+  if (error) return json({ error: String(error) }, 500);
+  return json({ deleted: true, mission_id: missionId });
+}
+
+// Sharpen a rough goal into a crisp mission + concrete constraints (Prompt Builder helper).
+async function refineGoal(req: Request): Promise<Response> {
+  let body: Record<string, unknown>;
+  try {
+    body = await req.json();
+  } catch {
+    return json({ error: 'Body must be valid JSON.' }, 400);
+  }
+  const rough = typeof body.goal === 'string' ? body.goal.trim() : '';
+  if (!rough) return json({ error: 'goal is required.' }, 400);
+  try {
+    const r = await internalAI().chat.completions.create({
+      model: EXTRACT_MODEL,
+      messages: [
+        { role: 'system', content: 'You sharpen a rough agent task into a crisp mission goal and concrete constraints. Respond with STRICT JSON only.' },
+        {
+          role: 'user',
+          content:
+            `ROUGH GOAL: ${rough}\n\nReturn JSON: {"goal":"one clear sentence stating exactly what the agent must accomplish",` +
+            '"constraints":["specific must/must-not rules"]}. 3-6 constraints max, each concrete and checkable.',
+        },
+      ],
+      temperature: 0.2,
+      max_tokens: 400,
+      response_format: { type: 'json_object' },
+    });
+    const parsed = safeJson(r.choices[0]?.message?.content ?? '');
+    return json({
+      goal: typeof parsed?.goal === 'string' ? parsed.goal : rough,
+      constraints: Array.isArray(parsed?.constraints) ? parsed.constraints.filter((c: unknown) => typeof c === 'string') : [],
+    });
+  } catch (e) {
+    return json({ goal: rough, constraints: [], error: String(e).slice(0, 200) });
+  }
+}
+
+// All of the signed-in user's missions with rollups.
+async function listMissions(req: Request): Promise<Response> {
+  const uid = await maybeUserId(req);
+  if (!uid) return json({ error: 'Authentication required.' }, 401);
+  const { data, error } = await admin().rpc('anchor_user_missions', { p_user_id: uid });
+  if (error) return json({ error: String(error) }, 500);
+  return json({ missions: data || [] });
+}
+
+// All of the user's keys (including revoked) joined with mission context + usage.
+async function listUserKeys(req: Request): Promise<Response> {
+  const uid = await maybeUserId(req);
+  if (!uid) return json({ error: 'Authentication required.' }, 401);
+  const { data, error } = await admin().rpc('anchor_user_keys', { p_user_id: uid });
+  if (error) return json({ error: String(error) }, 500);
+  const keys = ((data as Array<Record<string, unknown>>) || []).map((k) => ({
+    id: k.id,
+    key_prefix: k.key_prefix,
+    label: k.label,
+    mission: { id: k.mission_id, name: k.mission_name, goal: k.mission_goal },
+    status: k.revoked ? 'revoked' : 'active',
+    created_at: k.created_at,
+    last_used_at: k.last_used_at,
+    request_count: k.request_count,
+    usage: { tokens: Number(k.tokens) || 0, cost_usd: Number(k.cost) || 0, loops: Number(k.loops) || 0 },
+  }));
+  return json({ keys });
+}
+
+// Rename/label or revoke a key, scoped to the owner.
+async function labelKey(req: Request, keyId: string): Promise<Response> {
+  const uid = await maybeUserId(req);
+  if (!uid) return json({ error: 'Authentication required.' }, 401);
+  let body: Record<string, unknown>;
+  try { body = await req.json(); } catch { return json({ error: 'Body must be valid JSON.' }, 400); }
+  const db = admin();
+  const { data: krow } = await db.from('api_keys').select('mission_id').eq('id', keyId).maybeSingle();
+  if (!krow) return json({ error: 'Key not found.' }, 404);
+  const { data: m } = await db.from('missions').select('user_id').eq('id', (krow as { mission_id: string }).mission_id).maybeSingle();
+  if ((m as { user_id?: string } | null)?.user_id !== uid) return json({ error: 'Unauthorized.' }, 401);
+  const patch: Record<string, unknown> = {};
+  if (typeof body.label === 'string') patch.label = body.label.slice(0, 80);
+  if (typeof body.revoked === 'boolean') patch.revoked = body.revoked;
+  if (!Object.keys(patch).length) return json({ error: 'Nothing to update.' }, 400);
+  const { data, error } = await db.from('api_keys').update(patch).eq('id', keyId).select('id, label, revoked');
+  if (error) return json({ error: String(error) }, 500);
+  return json({ key: (data as unknown[])?.[0] ?? null });
+}
+
 // ───────────────────────────── router ─────────────────────────────
 
 export default async function (req: Request): Promise<Response> {
@@ -1316,18 +1558,30 @@ export default async function (req: Request): Promise<Response> {
     // proxy
     if (req.method === 'POST' && path === '/v1/chat/completions') return await handleChatCompletions(req);
     if (req.method === 'POST' && path === '/v1/messages') return await handleMessages(req);
+    if (req.method === 'GET' && path === '/v1/context') return await handleContext(req);
+    if (req.method === 'POST' && path === '/v1/report') return await handleReport(req);
+    if (req.method === 'POST' && path === '/v1/check') return await handleCheck(req);
+
+    if (req.method === 'POST' && path === '/refine') return await refineGoal(req);
+
+    // user-scoped key history
+    if (path === '/keys' && req.method === 'GET') return await listUserKeys(req);
+    if (seg[0] === 'keys' && seg[1] && req.method === 'PATCH') return await labelKey(req, seg[1]);
 
     // control plane
     if (seg[0] === 'missions') {
       if (req.method === 'POST' && seg.length === 1) return await createMission(req);
+      if (req.method === 'GET' && seg.length === 1) return await listMissions(req);
       const missionId = seg[1];
       if (missionId) {
         if (seg[2] === 'steps' && req.method === 'GET') return await getSteps(req, missionId, url);
         if (seg[2] === 'memory' && req.method === 'POST') return await addMemory(req, missionId, url);
+        if (seg[2] === 'keys' && req.method === 'GET') return await listKeys(req, missionId, url);
         if (seg[2] === 'keys' && req.method === 'POST') return await createKey(req, missionId, url);
         if (seg[2] === 'keys' && seg[3] && req.method === 'DELETE') return await revokeKey(req, missionId, seg[3], url);
         if (seg.length === 2 && req.method === 'GET') return await getMission(req, missionId, url);
         if (seg.length === 2 && req.method === 'PATCH') return await patchMission(req, missionId, url);
+        if (seg.length === 2 && req.method === 'DELETE') return await deleteMission(req, missionId, url);
       }
     }
 

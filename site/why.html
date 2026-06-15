@@ -1,0 +1,185 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Why Anchor — One injection isn't enough</title>
+<meta name="description" content="Agents drift and loop because their instructions get buried as the conversation grows. Anchor re-injects the mission on every call, catches loops and drift, and logs the spend." />
+<meta name="color-scheme" content="light" />
+<meta name="theme-color" content="#fcfbf9" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="preconnect" href="https://api.fontshare.com" crossorigin />
+<link rel="preconnect" href="https://cdn.fontshare.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@500;600;700;800;900&family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+<link href="https://api.fontshare.com/v2/css?f[]=satoshi@400,500,600,700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="styles.css" />
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%235e6ad2' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='5' r='3'/%3E%3Cline x1='12' y1='22' x2='12' y2='8'/%3E%3Cpath d='M5 12H2a10 10 0 0 0 20 0h-3'/%3E%3C/svg%3E" />
+</head>
+<body>
+
+<svg class="sprite" aria-hidden="true" focusable="false">
+  <symbol id="i-anchor" viewBox="0 0 24 24"><circle cx="12" cy="5" r="3"/><line x1="12" y1="22" x2="12" y2="8"/><path d="M5 12H2a10 10 0 0 0 20 0h-3"/></symbol>
+  <symbol id="i-arrow" viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></symbol>
+  <symbol id="i-x" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></symbol>
+  <symbol id="i-loop" viewBox="0 0 24 24"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></symbol>
+  <symbol id="i-pointer" viewBox="0 0 20 20"><path d="M3 2l13 6.3-5.1 1.5L8 16 3 2z" fill="#17181c" stroke="#fff" stroke-width="1.2" stroke-linejoin="round"/></symbol>
+  <symbol id="i-menu" viewBox="0 0 24 24"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></symbol>
+  <symbol id="i-github" viewBox="0 0 24 24"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/></symbol>
+</svg>
+
+<a class="skip" href="#main">Skip to content</a>
+
+<header class="nav" id="nav">
+  <div class="nav-inner">
+    <a class="brand" href="index.html" aria-label="Anchor home"><svg class="brand-ic" aria-hidden="true"><use href="#i-anchor"/></svg><span>Anchor</span></a>
+    <nav class="nav-links" aria-label="Primary">
+      <a href="why.html" class="active">Why Anchor</a><a href="product.html">Product</a><a href="integrations.html">Integrations</a><a href="features.html">Features</a>
+    </nav>
+    <div class="nav-cta"><a class="btn ghost sm" data-cta="login" href="#">Sign in</a><a class="btn sm" data-cta="signup" href="#">Sign up</a></div>
+    <button class="nav-toggle" id="navToggle" aria-label="Open menu" aria-expanded="false"><svg aria-hidden="true"><use href="#i-menu"/></svg></button>
+  </div>
+  <div class="nav-mobile" id="navMobile" hidden>
+    <a href="why.html" class="active">Why Anchor</a><a href="product.html">Product</a><a href="integrations.html">Integrations</a><a href="features.html">Features</a>
+    <a href="https://github.com/sudhishbommaraju/Anchor" target="_blank" rel="noreferrer">GitHub</a>
+    <div class="nav-mobile-cta"><a class="btn ghost" data-cta="login" href="#">Sign in</a><a class="btn" data-cta="signup" href="#">Sign up</a></div>
+  </div>
+</header>
+
+<main id="main">
+  <section class="phero">
+    <div class="hero-bg" aria-hidden="true"></div>
+    <div class="phero-inner">
+      <span class="pill reveal"><span class="dot"></span> The problem</span>
+      <h1 class="reveal" data-reveal-delay="60">One injection <span class="grad">isn't enough.</span></h1>
+      <p class="lead reveal" data-reveal-delay="140">Agents drift and loop because their original instructions get buried as the conversation grows. Anchor's fix is continuous: rebuild and re-inject the mission on every call.</p>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="wrap">
+      <div class="head-split reveal">
+        <h2>Your agent shouldn't run on chaos.</h2>
+        <p class="note">Loops. Forgotten goals. Burned tokens. Longer runs should mean more done — not more drift.</p>
+      </div>
+      <div class="cards-3">
+        <article class="ncard reveal">
+          <span class="num">001</span>
+          <div class="ill"><svg viewBox="0 0 260 150" preserveAspectRatio="xMidYMid meet" fill="none" aria-hidden="true">
+            <rect x="44" y="26" width="110" height="26" rx="8" fill="#ecebe6"/><circle cx="60" cy="39" r="4" fill="#c9c8c1"/><rect x="72" y="36.5" width="70" height="5" rx="2.5" fill="#d6d5ce"/>
+            <rect x="40" y="58" width="110" height="26" rx="8" fill="#dcdbd4"/><circle cx="56" cy="71" r="4" fill="#bdbcb4"/><rect x="68" y="68.5" width="70" height="5" rx="2.5" fill="#cdccc4"/>
+            <rect x="36" y="90" width="110" height="26" rx="8" fill="#cfcec7"/><circle cx="52" cy="103" r="4" fill="#a9a89f"/><rect x="64" y="100.5" width="70" height="5" rx="2.5" fill="#bdbcb4"/>
+            <path d="M150 103 C200 101 204 41 158 41" stroke="#d98a2b" stroke-width="2.5" stroke-linecap="round"/>
+            <polyline points="166 33 156 41 166 49" stroke="#d98a2b" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+            <circle cx="200" cy="71" r="4" fill="#d98a2b"/>
+            <text x="210" y="76" font-family="'JetBrains Mono',monospace" font-size="13" font-weight="500" fill="#b45309">×12</text>
+          </svg></div>
+          <h3>They go in circles</h3>
+          <p>Agents retry the same failing approach over and over, never noticing the loop — until you do.</p>
+        </article>
+        <article class="ncard reveal" data-reveal-delay="80">
+          <span class="num">002</span>
+          <div class="ill"><svg viewBox="0 0 260 150" preserveAspectRatio="xMidYMid meet" fill="none" aria-hidden="true">
+            <circle cx="198" cy="64" r="30" stroke="#d6d5ce" stroke-width="2"/><circle cx="198" cy="64" r="19" stroke="#dcdbd4" stroke-width="2"/><circle cx="198" cy="64" r="8" stroke="#cdccc4" stroke-width="2"/>
+            <line x1="198" y1="64" x2="198" y2="44" stroke="#c4c3bb" stroke-width="2" stroke-linecap="round"/><path d="M198 44 L211 48 L198 53 Z" fill="#dcdbd4"/>
+            <path d="M32 122 C82 106 122 98 150 82" stroke="#c9c8c1" stroke-width="2.5" stroke-dasharray="1 8" stroke-linecap="round"/>
+            <path d="M150 82 C148 54 138 44 114 32" stroke="#7c3aed" stroke-width="2.5" stroke-dasharray="1 8" stroke-linecap="round"/>
+            <polyline points="124 38 112 31 119 44" stroke="#7c3aed" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+            <circle cx="32" cy="122" r="3.5" fill="#c4c3bb"/><circle cx="92" cy="100" r="3.5" fill="#bdbcb4"/><circle cx="146" cy="58" r="4.5" fill="#7c3aed"/>
+          </svg></div>
+          <h3>They forget the goal</h3>
+          <p>Your goal and rules get pushed out of context as the conversation grows, and the agent drifts off task.</p>
+        </article>
+        <article class="ncard reveal" data-reveal-delay="160">
+          <span class="num">003</span>
+          <div class="ill"><svg viewBox="0 0 260 150" preserveAspectRatio="xMidYMid meet" fill="none" aria-hidden="true">
+            <line x1="38" y1="123" x2="208" y2="123" stroke="#e3e2dc" stroke-width="2" stroke-linecap="round"/>
+            <rect x="46" y="92" width="28" height="31" rx="5" fill="#e3e2dc"/><rect x="86" y="74" width="28" height="49" rx="5" fill="#dcdbd4"/><rect x="126" y="52" width="28" height="71" rx="5" fill="#cdccc4"/><rect x="166" y="28" width="28" height="95" rx="5" fill="#171f33"/>
+            <path d="M52 100 C100 92 122 62 192 28" stroke="#5e6ad2" stroke-width="2.5" stroke-linecap="round"/>
+            <polyline points="182 26 194 24 191 36" stroke="#5e6ad2" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+            <circle cx="216" cy="34" r="15" fill="#eef0fb" stroke="#5e6ad2" stroke-width="1.3"/>
+            <text x="216" y="40" font-family="'JetBrains Mono',monospace" font-size="15" font-weight="600" fill="#4f5bc4" text-anchor="middle">$</text>
+          </svg></div>
+          <h3>You find out at the bill</h3>
+          <p>Every wasted loop is tokens you paid for, with no visibility into where it happened until it's too late.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- COMPARISON -->
+  <section class="section soft">
+    <div class="wrap">
+      <div class="sec-head center reveal"><h2>The difference on every call.</h2><p class="sub">Same agent, same model — with and without a layer that keeps re-grounding it.</p></div>
+      <div class="compare">
+        <div class="ccol reveal">
+          <div class="ch"><span class="badge bad">Without Anchor</span></div>
+          <div class="crow"><span class="ci x"><svg aria-hidden="true"><use href="#i-x"/></svg></span>Instructions get buried as the chat grows</div>
+          <div class="crow"><span class="ci x"><svg aria-hidden="true"><use href="#i-x"/></svg></span>Agent repeats the same failing step</div>
+          <div class="crow"><span class="ci x"><svg aria-hidden="true"><use href="#i-x"/></svg></span>Drifts onto tangents, unnoticed</div>
+          <div class="crow"><span class="ci x"><svg aria-hidden="true"><use href="#i-x"/></svg></span>You discover the waste on the invoice</div>
+          <div class="crow"><span class="ci x"><svg aria-hidden="true"><use href="#i-x"/></svg></span>No record of where it went wrong</div>
+        </div>
+        <div class="ccol good reveal" data-reveal-delay="100">
+          <div class="ch"><span class="badge win">With Anchor</span></div>
+          <div class="crow"><span class="ci c"><svg aria-hidden="true"><use href="#i-check"/></svg></span>Mission re-injected on every single call</div>
+          <div class="crow"><span class="ci c"><svg aria-hidden="true"><use href="#i-check"/></svg></span>Loops caught at cosine ≥ 0.85 and corrected</div>
+          <div class="crow"><span class="ci c"><svg aria-hidden="true"><use href="#i-check"/></svg></span>Drift caught ≤ 0.15 to the goal, re-grounded</div>
+          <div class="crow"><span class="ci c"><svg aria-hidden="true"><use href="#i-check"/></svg></span>Token + dollar cost logged per step</div>
+          <div class="crow"><span class="ci c"><svg aria-hidden="true"><use href="#i-check"/></svg></span>A full timeline of every intervention</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- THE MOMENT -->
+  <section class="section">
+    <div class="wrap">
+      <div class="frow reveal">
+        <div class="fr-copy">
+          <h3>It catches the loop, then re-grounds.</h3>
+          <p>The instant a step repeats or wanders, Anchor embeds it, queries pgvector, and rebuilds the system block — before the model ever sees the next turn. On a real run the model's reply literally starts <em style="color:var(--accent);font-style:italic">"It seems we're encountering a loop…"</em></p>
+          <ul class="fr-list">
+            <li><svg aria-hidden="true"><use href="#i-check"/></svg> Thresholds calibrated empirically for the embedding model</li>
+            <li><svg aria-hidden="true"><use href="#i-check"/></svg> Auto-correct, or alert-only — your call per mission</li>
+          </ul>
+        </div>
+        <div class="mock" id="work" aria-hidden="true">
+          <div class="work">
+            <div class="whead"><span class="dot"></span> Anchor · re-anchoring <span class="ago">2.1s</span></div>
+            <div class="bubble me">Loop detected at step #9 — cosine 0.91 to a recent action.</div>
+            <div class="bubble">On it. Re-grounding the agent across the pipeline:</div>
+            <div class="witem"><span class="ic done"><svg aria-hidden="true"><use href="#i-check"/></svg></span><span><b>Embedded</b> current step — text-embedding-3-small</span></div>
+            <div class="witem"><span class="ic done"><svg aria-hidden="true"><use href="#i-check"/></svg></span><span><b>Queried</b> pgvector — matched recent action @ 0.91</span></div>
+            <div class="witem"><span class="ic done"><svg aria-hidden="true"><use href="#i-check"/></svg></span><span><b>Rebuilt</b> system block — mission + memory + corrective</span></div>
+            <div class="witem"><span class="ic run"><svg aria-hidden="true"><use href="#i-loop"/></svg></span><span><b>Forwarding</b> to model — stream passthrough</span></div>
+            <div class="wbar"><i></i></div><div class="wbar-l">3 of 4 complete</div>
+          </div>
+          <div class="dcursor" aria-hidden="true"><svg viewBox="0 0 20 20"><use href="#i-pointer"/></svg></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section cta">
+    <div class="wrap"><div class="panel reveal">
+      <svg class="cta-anchor" aria-hidden="true"><use href="#i-anchor"/></svg>
+      <h2>Stop paying for drift.</h2>
+      <p>Set the mission once. Anchor keeps your agent on it — on every call.</p>
+      <div class="hero-actions"><a class="btn lg" data-cta="signup" href="#">Sign up <svg aria-hidden="true"><use href="#i-arrow"/></svg></a><a class="btn ghost lg" href="product.html">See the product</a></div>
+    </div></div>
+  </section>
+</main>
+
+<footer class="footer">
+  <div class="wrap foot-inner">
+    <div class="foot-brand"><a class="brand" href="index.html"><svg class="brand-ic" aria-hidden="true"><use href="#i-anchor"/></svg><span>Anchor</span></a><p>Set the mission once. Anchor keeps your agent on it.</p></div>
+    <nav class="foot-links" aria-label="Footer"><a href="why.html">Why Anchor</a><a href="product.html">Product</a><a href="integrations.html">Integrations</a><a href="features.html">Features</a><a data-cta="login" href="#">Sign in</a><a href="https://github.com/sudhishbommaraju/Anchor" target="_blank" rel="noreferrer">GitHub</a></nav>
+  </div>
+  <div class="wrap foot-bottom"><span>© <span id="year">2026</span> Anchor</span><span>Built on InsForge · Postgres + pgvector · OpenRouter · Deno edge functions</span></div>
+</footer>
+
+<script src="app.js" defer></script>
+</body>
+</html>
