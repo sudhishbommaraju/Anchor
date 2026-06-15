@@ -1,0 +1,2 @@
+# Local dev server only — not part of the static deploy.
+server.mjs
