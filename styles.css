@@ -119,7 +119,7 @@ code{font-family:var(--fm);font-size:.88em;}
 .compat li:hover{color:var(--accent);border-color:var(--accent-line);transform:translateY(-1px);}
 
 /* hero product showcase — light Anchor monitor infographic */
-.showcase{max-width:1000px;margin:54px auto 0;padding:0 var(--gutter);position:relative;}
+.showcase{max-width:1180px;margin:56px auto 0;padding:0 var(--gutter);position:relative;}
 .hmon{box-shadow:var(--sh-lg);}
 .hmon .mtit{display:inline-flex;align-items:center;gap:7px;font-family:var(--fb);font-weight:500;font-size:13px;color:var(--ink-2);}
 .hmon .mtit svg{width:14px;height:14px;color:var(--accent);}
@@ -148,8 +148,8 @@ code{font-family:var(--fm);font-size:.88em;}
 .dsteps .ds{width:6px;height:6px;border-radius:50%;background:var(--line-2);transition:background .35s,width .35s;}
 .dsteps .ds.on{background:var(--accent);width:18px;border-radius:3px;}
 #dLive{margin-left:10px;}
-.demo-stage{position:relative;height:316px;overflow:hidden;background:#fff;}
-.scene{position:absolute;inset:0;padding:22px 24px;opacity:0;transform:translateY(10px);transition:opacity .55s var(--e-out),transform .55s var(--e-out);pointer-events:none;}
+.demo-stage{position:relative;height:404px;overflow:hidden;background:#fff;}
+.scene{position:absolute;inset:0;padding:26px 28px;opacity:0;transform:translateY(10px);transition:opacity .55s var(--e-out),transform .55s var(--e-out);pointer-events:none;}
 .scene.s-on{opacity:1;transform:none;}
 .s1-goal{margin-top:6px;border:1px solid var(--line-2);border-radius:10px;padding:12px 14px;font-size:14px;color:var(--ink);background:var(--card-2);}
 .s1-chips{display:flex;gap:8px;margin-top:12px;}
@@ -172,9 +172,20 @@ code{font-family:var(--fm);font-size:.88em;}
 .tln.okline{color:var(--ok);opacity:0;transition:opacity .35s;}
 .tln.caret::after{content:"▍";color:var(--accent);animation:dblink 1s steps(1) infinite;}
 @keyframes dblink{50%{opacity:0;}}
-.s3tl{padding:10px 0 0;}
-.s3tl .mrow{padding:9px 10px;}
-@media (prefers-reduced-motion:reduce){ .scene{transition:none;} .dcursor{display:none;} .tln.okline{opacity:1;} }
+.s3tl{padding:12px 0 0;}
+.s3tl .mrow{padding:11px 12px;font-size:14px;}
+.hmon .hstats .n,.demo .hstats .n{font-size:22px;}
+.demo .hstats>div{padding:18px 16px;}
+/* the hero demo always plays — override the global reduced-motion freeze just for it */
+@media (prefers-reduced-motion:reduce){
+  .demo .scene{transition:opacity .55s cubic-bezier(.16,1,.3,1),transform .55s cubic-bezier(.16,1,.3,1) !important;}
+  .demo .s1-key{transition:opacity .4s,transform .4s !important;}
+  .demo .dcursor{display:block !important;transition:transform .85s cubic-bezier(.5,0,.2,1),opacity .4s !important;}
+  .demo .dcursor.click::after{animation:dripple .45s ease !important;}
+  .demo .tln.caret::after{animation:dblink 1s steps(1) infinite !important;}
+  .demo .s3tl .mrow{transition:opacity .4s,transform .4s !important;}
+  .demo .dot{animation:pulse 2.6s ease infinite !important;}
+}
 
 /* sections */
 .section{padding:104px 0;position:relative;}

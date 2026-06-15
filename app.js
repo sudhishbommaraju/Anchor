@@ -154,8 +154,7 @@
     const w = (ms) => new Promise((r) => setTimeout(r, ms));
     const setScene = (n) => { scenes.forEach((s) => s.classList.toggle('s-on', s.dataset.scene === String(n))); dots.forEach((d, i) => d.classList.toggle('on', i === n - 1)); };
 
-    if (reduce) { setScene(3); title.textContent = 'Mission · CLI Todo App'; live.hidden = false; stats.forEach((e) => e.textContent = Number(e.dataset.c).toLocaleString()); return; }
-
+    // Hero demo always plays (owner choice); CSS restores its transitions under reduced-motion.
     const baseRect = () => (cur.offsetParent || stage).getBoundingClientRect();
     const rel = (el) => { const c = baseRect(), r = el.getBoundingClientRect(); return { x: r.left - c.left + r.width / 2 - 4, y: r.top - c.top + r.height / 2 - 2 }; };
     const home = () => { const c = baseRect(); return { x: c.width - 46, y: c.height - 40 }; };
@@ -199,10 +198,7 @@
         await w(3400);
       }
     };
-    if ('IntersectionObserver' in window) {
-      const io = new IntersectionObserver((es, obs) => es.forEach((e) => { if (e.isIntersecting) { run(); obs.disconnect(); } }), { threshold: 0.25 });
-      io.observe(root);
-    } else { run(); }
+    setTimeout(run, 350);
   })();
 
   /* ---- tabs ---- */
