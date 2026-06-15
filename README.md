@@ -2,6 +2,8 @@
 
 **Set the mission once. Anchor keeps your agent on it.**
 
+**Live:** [2ecpc69u.insforge.site](https://2ecpc69u.insforge.site) — create a mission, get a key, watch the Monitor in real time.
+
 Anchor is a drop-in proxy that keeps AI coding agents on task. You write your goal
 once (a **mission**); Anchor turns it into an API key. Point your agent — Claude
 Code, Cursor, the OpenAI/Anthropic SDK, or any script — at Anchor's endpoint with
@@ -47,6 +49,21 @@ is the whole job.
 convention and looped until the step cap. This is the counterfactual for "saved vs. what?": the
 baseline is the same agent without re-injection. (Numbers from a live run; reproduce with
 `node bench/bench.mjs`. Engine correctness is verified by `scripts/enginetest.mjs`.)
+
+### What it costs you in latency
+
+Anchoring adds work before the model starts streaming. Measured against the live deployment
+(`node bench/latency.mjs`, streaming, 12 calls after warm-up):
+
+| | Median | p90 |
+|---|---|---|
+| **Preflight overhead** (key + rate-limit + embed + detect + retrieve + block build) | **571 ms** | 881 ms |
+| Client TTFB (incl. network + the model's own time-to-first-token) | 1,349 ms | 1,730 ms |
+
+The embedding of the latest turn (~329 ms) is the floor — detecting a loop requires it. Detect
+and retrieval run concurrently, and the overhead is **bounded and independent of session length**
+because the injected block is token-budgeted, so it does not grow as history grows. Full
+breakdown in `bench/latency.md`.
 
 ---
 
@@ -277,10 +294,11 @@ npx @insforge/cli ai setup                                       # fetch OPENROU
 npx @insforge/cli secrets add OPENROUTER_API_KEY "$(grep OPENROUTER_API_KEY .env.local | cut -d= -f2-)"
 npx @insforge/cli db migrations up --all                         # apply the schema
 npx @insforge/cli functions deploy anchor --file ./functions/anchor.ts
+npx @insforge/cli deployments deploy web                         # host the console (static)
 ```
 
 Your base URL is `https://<appkey>.functions.insforge.app/anchor` (the appkey is in
-`.insforge/project.json`).
+`.insforge/project.json`); the console is served at `https://<appkey>.insforge.site`.
 
 ---
 
