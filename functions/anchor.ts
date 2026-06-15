@@ -579,6 +579,7 @@ async function postProcess(opts: {
               type: items[i].type,
               content: truncate(items[i].content, 600),
               embedding: emb,
+              provenance: 'asserted', // model-extracted, not verified — never overrides mission constraints
               source_step_id: respId ?? reqId,
             },
           ]);
@@ -703,6 +704,7 @@ async function handleChatCompletions(req: Request): Promise<Response> {
     mission = null;
   }
   if (!mission) return oaiError('Invalid or revoked Anchor API key.', 401, 'authentication_error');
+  const rl = await rateLimited(req, key); if (rl) return rl;
 
   let body: Record<string, unknown>;
   try {
@@ -987,6 +989,7 @@ async function handleMessages(req: Request): Promise<Response> {
     mission = null;
   }
   if (!mission) return anthropicError('Invalid or revoked Anchor API key.', 401, 'authentication_error');
+  const rl = await rateLimited(req, key); if (rl) return rl;
 
   let body: Record<string, unknown>;
   try {
@@ -1183,6 +1186,7 @@ async function handleContext(req: Request): Promise<Response> {
   if (!key) return json({ error: 'Missing Anchor API key.' }, 401);
   const mission = await resolveMissionFromKey(key, true).catch(() => null);
   if (!mission) return json({ error: 'Invalid or revoked Anchor API key.' }, 401);
+  { const rl = await rateLimited(req, key); if (rl) return rl; }
   const opts = mergedOptions(mission);
   const [memItems, planStep, last] = await Promise.all([
     fetchInjectionMemory(mission.id, null),
@@ -1208,6 +1212,7 @@ async function handleReport(req: Request): Promise<Response> {
   if (!key) return json({ error: 'Missing Anchor API key.' }, 401);
   const mission = await resolveMissionFromKey(key, true).catch(() => null);
   if (!mission) return json({ error: 'Invalid or revoked Anchor API key.' }, 401);
+  { const rl = await rateLimited(req, key); if (rl) return rl; }
   let body: Record<string, unknown>;
   try { body = await req.json(); } catch { return json({ error: 'Body must be valid JSON.' }, 400); }
   const action = typeof body.action === 'string' ? body.action.trim() : '';
@@ -1255,6 +1260,7 @@ async function handleCheck(req: Request): Promise<Response> {
   if (!key) return json({ error: 'Missing Anchor API key.' }, 401);
   const mission = await resolveMissionFromKey(key, true).catch(() => null);
   if (!mission) return json({ error: 'Invalid or revoked Anchor API key.' }, 401);
+  { const rl = await rateLimited(req, key); if (rl) return rl; }
   let body: Record<string, unknown>;
   try { body = await req.json(); } catch { return json({ error: 'Body must be valid JSON.' }, 400); }
   const action = typeof body.action === 'string' ? body.action.trim() : '';
