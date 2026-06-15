@@ -123,7 +123,8 @@ const NAV = [
   { key: 'settings', icon: 'settings', lbl: 'Settings', href: () => '#/settings', match: (h) => h === '/settings' },
 ];
 const navSlice = (h, keys) => NAV.filter((n) => keys.includes(n.key)).map((n) => `<a class="navitem ${n.match(h) ? 'active' : ''}" href="${n.href()}">${icon(n.icon)}<span class="lbl">${n.lbl}</span></a>`).join('');
-const PUBLIC = ['/', '/docs', '/login', '/signup'];
+const SITE_URL = 'https://anchor-delta-ten.vercel.app/'; // marketing site = the public "home"
+const PUBLIC = ['/docs', '/login', '/signup'];
 
 let pollTimer = null;
 const stopPoll = () => { if (pollTimer) { clearInterval(pollTimer); pollTimer = null; } };
@@ -133,6 +134,7 @@ function route() {
   stopPoll();
   const h = location.hash.replace(/^#/, '') || '/';
   const authed = !!S.auth?.accessToken;
+  if (h === '/') { location.hash = authed ? '#/dashboard' : '#/login'; return; }
   if (PUBLIC.includes(h)) {
     if (authed && h !== '/docs') { location.hash = '#/dashboard'; return; }
     renderPublic(h);
@@ -159,7 +161,7 @@ window.addEventListener('keydown', (e) => { if ((e.metaKey || e.ctrlKey) && e.ke
 // =========================================================================
 function publicNav(active) {
   return `<header class="pnav">
-    <a class="brand-lg" href="#/">${icon('anchor')}<span>Anchor</span></a>
+    <a class="brand-lg" href="${SITE_URL}">${icon('anchor')}<span>Anchor</span></a>
     <nav class="pnav-links">
       <a href="#/docs" class="${active === 'docs' ? 'on' : ''}">How it works</a>
       <a href="#/login" class="btn ghost sm">Log in</a>
@@ -174,75 +176,8 @@ function publicFooter() {
     <div class="muted" style="font-size:12px">© 2026 Anchor · Built on InsForge</div>
   </footer>`;
 }
-function heroMock() {
-  return `<div class="mock card">
-    <div class="mock-bar"><span class="dot active"></span><span class="muted" style="font-size:12px">Mission · CLI Todo App</span></div>
-    <div class="mock-stats">
-      <div><div class="mn">5.9k</div><div class="ml">tokens</div></div>
-      <div><div class="mn">$0.0016</div><div class="ml">cost</div></div>
-      <div><div class="mn" style="color:var(--loop)">2</div><div class="ml">loops</div></div>
-    </div>
-    <div class="mock-tl">
-      <div class="mock-step"><span class="seq">#7</span><span class="flag ok">on track</span> write list command</div>
-      <div class="mock-step loop"><span class="seq">#9</span><span class="flag loop">LOOP 100%</span> repeat: fix JSONDecodeError</div>
-      <div class="mock-step loop"><span class="seq">#11</span><span class="flag anchor">Anchor stepped in</span> re-grounded</div>
-      <div class="mock-step"><span class="seq">#13</span><span class="flag ok">on track</span> add done command</div>
-    </div>
-  </div>`;
-}
-function pageLanding(app) {
-  app.innerHTML = `<div class="public">${publicNav()}
-    <main class="pmain">
-      <section class="hero">
-        <div class="hero-copy">
-          <h1>Set the mission once.<br>Anchor keeps your agent on it.</h1>
-          <p class="lead">Anchor is a drop-in layer for AI coding agents that stops them looping, losing context, and burning tokens. Give it your goal, get an API key, and it re-injects your mission and memory into the agent on every step.</p>
-          <div class="row" style="gap:12px;margin-top:8px">
-            <a class="btn lg" href="#/signup">Get started — it's free ${icon('arrow')}</a>
-            <a class="btn ghost lg" href="#/docs">See how it works</a>
-          </div>
-        </div>
-        <div class="hero-visual">${heroMock()}</div>
-      </section>
-
-      <section class="psection">
-        <h2 class="ph">The problem</h2>
-        <div class="cards3">
-          ${[['repeat', 'Agents go in circles', 'They retry the same failing approach over and over, never noticing the loop.'],
-            ['compass', 'They forget what you told them', 'Your goal and rules get buried as the conversation grows, and the agent drifts.'],
-            ['wallet', 'You find out when the bill arrives', 'Every wasted loop is tokens you paid for, with no visibility until it is too late.']].map(([ic, t, d]) =>
-            `<div class="card feat"><div class="feat-ic">${icon(ic)}</div><h3>${t}</h3><p>${d}</p></div>`).join('')}
-        </div>
-      </section>
-
-      <section class="psection">
-        <h2 class="ph">How it works</h2>
-        <div class="steps">
-          ${[['1', 'Write your mission', 'Your goal plus any rules and constraints — once.'],
-            ['2', 'Get an API key', 'Anchor turns the mission into a dedicated key.'],
-            ['3', 'Point your agent at it', 'Anchor re-injects mission + memory every step and flags loops in real time.']].map(([n, t, d]) =>
-            `<div class="step-card"><div class="step-n">${n}</div><div><h3>${t}</h3><p>${d}</p></div></div>`).join('')}
-        </div>
-      </section>
-
-      <section class="psection">
-        <h2 class="ph">What you get</h2>
-        <div class="cards2">
-          ${[['Continuous memory injection', 'Mission + a deduped, living memory re-injected on every model call.'],
-            ['Semantic loop & drift detection', 'pgvector similarity catches repeats and off-task steps, then re-grounds the agent.'],
-            ['Live monitoring', 'Watch tokens, cost, loops, and interventions update in real time.'],
-            ['Drop-in everywhere', 'Works with Claude Code, Cursor, and any OpenAI- or Anthropic-compatible agent — or read the key directly via REST/MCP.']].map(([t, d]) =>
-            `<div class="card feat"><div class="feat-ic sm">${icon('check')}</div><h3>${t}</h3><p>${d}</p></div>`).join('')}
-        </div>
-      </section>
-
-      <section class="cta-band">
-        <h2>Keep your agents on task.</h2>
-        <a class="btn lg" href="#/signup">Get started ${icon('arrow')}</a>
-      </section>
-      ${publicFooter()}
-    </main></div>`;
-}
+// In-app landing removed — the public landing lives on the marketing site (SITE_URL).
+// "#/" now redirects (route): signed-out → /login, signed-in → /dashboard.
 function pageDocs(app) {
   const k = 'anc_live_…';
   app.innerHTML = `<div class="public">${publicNav('docs')}
@@ -272,7 +207,7 @@ curl ${apiBase()}/v1/context -H "authorization: Bearer ${k}"</pre></div>
 }
 function authShell(title, sub, formHtml, footHtml) {
   return `<div class="public auth-bg">
-    <a class="brand-lg auth-logo" href="#/">${icon('anchor')}<span>Anchor</span></a>
+    <a class="brand-lg auth-logo" href="${SITE_URL}">${icon('anchor')}<span>Anchor</span></a>
     <div class="auth-card card">
       <h1>${title}</h1><p class="auth-sub">${sub}</p>
       ${formHtml}
@@ -333,7 +268,7 @@ function renderPublic(h) {
   if (h === '/docs') return pageDocs(app);
   if (h === '/login') return pageLogin(app);
   if (h === '/signup') return pageSignup(app);
-  return pageLanding(app);
+  return pageLogin(app);
 }
 function renderShell(h) {
   const app = document.getElementById('app');
@@ -414,6 +349,7 @@ function statRow(st) {
     ${cell('Tokens In', n(st.tokens_in))}
     ${cell('Tokens Out', n(st.tokens_out))}
     ${cell('Cost', fmtCost(st.cost_usd))}
+    ${cell('Net tokens', (Number(st.net_tokens || 0) >= 0 ? '+' : '') + n(st.net_tokens || 0), Number(st.net_tokens || 0) >= 0 ? 'var(--good)' : 'var(--loop)')}
     ${cell('Loops', st.loops || 0, 'var(--loop)')}
     ${cell('Drifts', st.drifts || 0, 'var(--drift)')}
     ${cell('Interventions', st.interventions || 0, 'var(--accent)')}
@@ -524,10 +460,13 @@ function pageMonitor(c, id) {
     if (!reqs.length) { tl.innerHTML = `<div class="memrow"><span class="mtext muted">No steps yet — point your agent at this mission's key${hasKey ? ', or press Run demo' : ''}.</span></div>`; return; }
     tl.innerHTML = '';
     for (const step of reqs) {
-      const cls = step.loop_flag ? 'loop' : step.drift_flag ? 'drift' : '';
+      const ds = step.detection_state || '';
+      const cls = step.loop_flag ? 'loop' : step.drift_flag ? 'drift' : ds === 'loop_suspected' ? 'loop suspected' : ds === 'drift_suspected' ? 'drift suspected' : '';
       const badges = [];
       if (step.loop_flag) badges.push(`<span class="tb loop">LOOP ${(Number(step.loop_similarity) * 100).toFixed(0)}%</span>`);
+      else if (ds === 'loop_suspected') badges.push('<span class="tb loop suspected">LOOP?</span>');
       if (step.drift_flag) badges.push('<span class="tb drift">DRIFT</span>');
+      else if (ds === 'drift_suspected') badges.push('<span class="tb drift suspected">DRIFT?</span>');
       if (step.intervened) badges.push('<span class="tb interv">INTERVENED</span>');
       const div = el(`<div class="trow ${cls}"><span class="tseq">${step.seq}</span><span class="ttext">${esc(trunc((step.content || '').replace(/^user:\s*/, ''), 140))}</span>${badges.length ? `<div class="tbadges">${badges.join('')}</div>` : ''}</div>`);
       div.onclick = () => { const inj = step.meta?.injected_preview; if (!inj) return toast('No injected block for this step'); document.getElementById('mInj').textContent = inj; document.getElementById('mInjCard').classList.remove('hide'); document.getElementById('mInjCard').scrollIntoView({ behavior: 'smooth' }); };
@@ -703,9 +642,16 @@ function pageIntegration(c) {
   document.getElementById('ibody').innerHTML = `<div class="card">
     <div class="tabs"><div class="tab active" data-t="openai">OpenAI</div><div class="tab" data-t="anthropic">Claude Code</div><div class="tab" data-t="direct">Direct (REST)</div><div class="tab" data-t="mcp">MCP</div><div class="tab" data-t="curl">cURL</div></div>
     <div class="muted" id="iNote" style="margin-bottom:10px"></div><pre class="code" id="iCode"></pre>
-    <div class="row" style="margin-top:10px"><button class="btn sm" id="iCopy">Copy snippet</button></div></div>`;
+    <div class="row" style="margin-top:10px"><button class="btn sm" id="iCopy">Copy snippet</button><button class="btn ghost sm" id="iPrompt">Copy full agent prompt (MCP)</button></div></div>`;
   const setTab = (t) => { document.querySelectorAll('.tab').forEach((x) => x.classList.toggle('active', x.dataset.t === t)); document.getElementById('iNote').textContent = snippets[t].note; document.getElementById('iCode').textContent = snippets[t].code; document.getElementById('iCopy').onclick = () => copy(snippets[t].code); };
   document.querySelectorAll('.tab').forEach((x) => (x.onclick = () => setTab(x.dataset.t)));
+  document.getElementById('iPrompt').onclick = async () => {
+    try {
+      const r = await fetch(`${m.base}/missions/${m.id}/agent-prompt?mode=mcp&key=${encodeURIComponent(m.key)}`);
+      const j = await r.json();
+      copy((j.prompt || '').replaceAll('<YOUR_ANCHOR_KEY>', m.key));
+    } catch { toast('Failed to generate prompt'); }
+  };
   setTab('openai');
 }
 

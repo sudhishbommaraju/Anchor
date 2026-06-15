@@ -22,6 +22,50 @@ in circles**, and **burning tokens** doing it.
 Built entirely on [InsForge](https://insforge.dev) — Postgres + pgvector, the
 OpenRouter AI gateway, and a Deno edge function. No separate server stack.
 
+**Anchor is a real-time supervisor — a control plane for AI agents, not a memory store.**
+It sits *on top of* whatever memory the agent has and actively intervenes: it tracks failed
+approaches, detects loops and drift, and re-grounds the agent mid-run. The point isn't to
+remember more; it's to keep the agent *on task*.
+
+---
+
+## Benchmark — measured, not asserted
+
+The same task run twice (`node bench/bench.mjs`): implement two functions one-per-turn under an
+arbitrary naming convention stated once, with a bounded context window standing in for a long
+session where early turns scroll out. The convention is un-guessable on purpose — remembering it
+is the whole job.
+
+| Metric | Baseline (no Anchor) | With Anchor |
+|---|---|---|
+| Completed the task? | **NO** (hit 12-step cap) | **yes** (2 steps) |
+| Steps spent looping on the forgotten rule | 11× | 0× |
+| Tokens (in + out) | 1,102 | 467 |
+| Cost (USD) | $0.00025 | $0.00009 |
+
+**Net 635 tokens saved (58%), and the task completed *only* with Anchor** — the baseline lost the
+convention and looped until the step cap. This is the counterfactual for "saved vs. what?": the
+baseline is the same agent without re-injection. (Numbers from a live run; reproduce with
+`node bench/bench.mjs`. Engine correctness is verified by `scripts/enginetest.mjs`.)
+
+---
+
+## Isn't this just mem0 / Letta / Zep?
+
+No. Those are **memory stores** — they persist and retrieve facts so the agent can recall more.
+Anchor is a **supervisor / control plane**: it watches the agent act and *intervenes in real time*.
+
+- It **detects loops** (semantic repeats, trend + cluster + cyclic) and **drift** (phase-gated,
+  plan-aware), with a suspected→confirmed debounce so it doesn't misfire.
+- On a confirmed loop its corrective is **dead-end-aware**: it names the approaches you already
+  tried, the attempt count, and demands a *categorically different* strategy — restating the goal
+  is not enough. It **escalates** to a re-plan / needs-input after repeated failures.
+- Its injection is **bounded** (a hard token budget with top-k retrieval), so re-grounding every
+  call doesn't blow up cost — net tokens stay positive (see the benchmark).
+
+You can put a memory store *behind* Anchor. Anchor is the layer that decides the agent has gone
+off the rails and pulls it back.
+
 ---
 
 ## Why one injection isn't enough

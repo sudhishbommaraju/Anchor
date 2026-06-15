@@ -323,3 +323,7 @@ pre.code { white-space:pre-wrap; background:#0E1116; border:1px solid #1d2430; b
 .livepill.paused { background:#fff7ed; color:#ea580c; }
 .livepill.completed { background:#f3f4f6; color:#6b7280; }
 .livepill.failed { background:#fef2f2; color:#dc2626; }
+
+/* suspected (not-yet-confirmed) detections: shown but not acted on */
+.trow.suspected { opacity:.6; border-left-style:dashed; background:transparent; }
+.tb.suspected { opacity:.6; font-style:italic; }

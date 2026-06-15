@@ -7,6 +7,8 @@
   "scripts": {
     "web": "node web/server.mjs",
     "demo": "node demo/demo.mjs",
+    "bench": "node bench/bench.mjs",
+    "enginetest": "node scripts/enginetest.mjs",
     "create-mission": "node demo/create-mission.mjs",
     "uitest": "node scripts/uitest.mjs"
   },

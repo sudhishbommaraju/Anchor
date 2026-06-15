@@ -230,6 +230,22 @@ function mergedOptions(mission: Mission) {
   return { ...DEFAULT_OPTIONS, ...(mission.options || {}) };
 }
 
+// Per-key + per-IP fixed-window rate limit for /v1/* (fail-open on error).
+async function rateLimited(req: Request, key: string): Promise<Response | null> {
+  try {
+    const ip = (req.headers.get('x-forwarded-for') || '').split(',')[0].trim() || req.headers.get('x-real-ip') || '';
+    const kh = (await sha256hex(key)).slice(0, 24);
+    const { data } = await admin().rpc('anchor_rate_check', { p_key: kh, p_ip: ip, p_window: 60, p_key_limit: 120, p_ip_limit: 300 });
+    if (data && (data as { allowed?: boolean }).allowed === false) {
+      return new Response(JSON.stringify({ error: { message: 'Rate limit exceeded — slow down (per-key/per-IP limit).', type: 'rate_limit_error', code: 'rate_limited' } }), {
+        status: 429,
+        headers: { ...CORS, 'content-type': 'application/json', 'retry-after': '30' },
+      });
+    }
+  } catch (_e) { /* fail open */ }
+  return null;
+}
+
 // ───────────────────────────── injection block ─────────────────────────────
 
 function stripAnchorBlocks(messages: Msg[]): Msg[] {
@@ -1403,12 +1419,22 @@ async function getMission(req: Request, missionId: string, url: URL): Promise<Re
 
   const [{ data: memory }, { data: steps }, { data: stats }, { data: plan }] = await Promise.all([
     db.from('memory_items').select('id, type, content, active, created_at').eq('mission_id', missionId).eq('active', true).order('created_at', { ascending: false }).limit(100),
-    db.from('steps').select('id, seq, role, content, model, tokens_in, tokens_out, cost_usd, loop_flag, loop_similarity, drift_flag, drift_similarity, intervened, meta, created_at').eq('mission_id', missionId).order('seq', { ascending: false }).limit(60),
+    db.from('steps').select('id, seq, role, content, model, tokens_in, tokens_out, cost_usd, loop_flag, loop_similarity, drift_flag, drift_similarity, detection_state, intervened, meta, created_at').eq('mission_id', missionId).order('seq', { ascending: false }).limit(60),
     db.rpc('anchor_mission_stats', { p_mission_id: missionId }),
     db.from('plan_steps').select('ord, instruction, status').eq('mission_id', missionId).order('ord', { ascending: true }),
   ]);
 
-  const stat = Array.isArray(stats) ? (stats as unknown[])[0] : stats;
+  const stat = (Array.isArray(stats) ? (stats as Array<Record<string, unknown>>)[0] : stats) as Record<string, unknown> | null;
+  if (stat) {
+    // net tokens (estimate): tokens avoided by breaking loops − bounded-injection overhead.
+    const stepsArr = (steps as Array<{ meta?: { injection_tokens?: number } }> | null) || [];
+    const overhead = stepsArr.reduce((a, s) => a + (Number(s.meta?.injection_tokens) || 0), 0);
+    const responses = Number(stat.total_responses) || 0;
+    const avgResp = responses ? Number(stat.tokens_out) / responses : 0;
+    const avoided = Math.round((Number(stat.interventions) || 0) * (avgResp || 300));
+    stat.injection_overhead = overhead;
+    stat.net_tokens = avoided - overhead;
+  }
   return json({
     mission,
     memory_items: memory || [],
@@ -1597,6 +1623,29 @@ async function labelKey(req: Request, keyId: string): Promise<Response> {
   return json({ key: (data as unknown[])?.[0] ?? null });
 }
 
+// Copy-ready "use this Anchor key" prompt for an agent. Default mode = MCP.
+async function agentPrompt(req: Request, missionId: string, url: URL): Promise<Response> {
+  if (!(await authorizeMission(req, missionId, url))) return json({ error: 'Unauthorized.' }, 401);
+  const { data: m } = await admin().from('missions').select('name, goal, constraints').eq('id', missionId).maybeSingle();
+  if (!m) return json({ error: 'Mission not found.' }, 404);
+  const mission = m as { goal: string; constraints: string[] };
+  const mode = (url.searchParams.get('mode') || 'mcp').toLowerCase();
+  const urls = baseUrls();
+  const K = '<YOUR_ANCHOR_KEY>';
+  const goal = mission.goal;
+  const cons = (mission.constraints || []).filter(Boolean);
+  const consText = cons.length ? cons.map((c) => `- ${c}`).join('\n') : '- (none)';
+  let prompt: string;
+  if (mode === 'proxy') {
+    prompt = `Use Anchor to stay on task for this mission.\n\nMISSION: ${goal}\nCONSTRAINTS:\n${consText}\n\nPoint your model endpoint at Anchor and use this key:\n  OPENAI_BASE_URL=${urls.openai}\n  OPENAI_API_KEY=${K}\n(Claude Code: ANTHROPIC_BASE_URL=${urls.anthropic}, ANTHROPIC_AUTH_TOKEN=${K})\nThen work normally — Anchor re-injects the mission + memory and flags loops/drift automatically.`;
+  } else if (mode === 'retrieval') {
+    prompt = `Use this Anchor key to stay on task: ${K}\n\nMISSION: ${goal}\nCONSTRAINTS:\n${consText}\n\n1) GET ${urls.anthropic}/v1/context with header "Authorization: Bearer ${K}". Treat the returned injection_block as authoritative system context.\n2) After each step, POST {action,result,outcome} to ${urls.anthropic}/v1/report and read the refreshed injection_block + warnings before continuing.\n3) If a warning says you looped, do something CATEGORICALLY DIFFERENT — never repeat a failed approach.`;
+  } else {
+    prompt = `Use the Anchor MCP server to stay on task for this mission.\n\nMISSION: ${goal}\nCONSTRAINTS:\n${consText}\n\nCall anchor_get_context first to load the mission + memory; follow its injection_block. Use anchor_check(action) before a risky/repetitive step, and anchor_report_step(action, result, outcome) after each step. If a loop is reported, change strategy — do not repeat a failed approach.\n\nMCP config env: ANCHOR_KEY=${K}, ANCHOR_API_BASE=${urls.anthropic}`;
+  }
+  return json({ mode, base_url: urls.openai, anthropic_base_url: urls.anthropic, goal, prompt });
+}
+
 // ───────────────────────────── router ─────────────────────────────
 
 export default async function (req: Request): Promise<Response> {
@@ -1627,6 +1676,7 @@ export default async function (req: Request): Promise<Response> {
       const missionId = seg[1];
       if (missionId) {
         if (seg[2] === 'steps' && req.method === 'GET') return await getSteps(req, missionId, url);
+        if (seg[2] === 'agent-prompt' && req.method === 'GET') return await agentPrompt(req, missionId, url);
         if (seg[2] === 'memory' && req.method === 'POST') return await addMemory(req, missionId, url);
         if (seg[2] === 'keys' && req.method === 'GET') return await listKeys(req, missionId, url);
         if (seg[2] === 'keys' && req.method === 'POST') return await createKey(req, missionId, url);
