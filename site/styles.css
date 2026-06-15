@@ -14,7 +14,7 @@
   --fd:'Nunito',-apple-system,BlinkMacSystemFont,system-ui,'Segoe UI',sans-serif;
   --fb:'Satoshi','Nunito',-apple-system,BlinkMacSystemFont,system-ui,'Segoe UI',sans-serif;
   --fm:'JetBrains Mono',ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
-  --r:20px; --r-sm:12px; --r-pill:999px; --maxw:1200px; --gutter:32px;
+  --r:20px; --r-sm:12px; --r-pill:999px; --maxw:1280px; --gutter:40px;
   --e-out:cubic-bezier(.16,1,.3,1); --e-spring:cubic-bezier(.34,1.4,.5,1);
   --sh-xs:0 1px 2px rgba(23,31,51,.05);
   --sh:0 2px 6px rgba(23,31,51,.05),0 14px 34px -16px rgba(23,31,51,.18);
