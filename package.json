@@ -1,0 +1,14 @@
+{
+  "name": "anchor",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Anchor — a drop-in proxy that keeps AI coding agents on task. Re-injects the mission + live memory on every model call, detects loops/drift, and logs token spend.",
+  "scripts": {
+    "demo": "node demo/demo.mjs",
+    "create-mission": "node demo/create-mission.mjs"
+  },
+  "dependencies": {
+    "openai": "^4.77.0"
+  }
+}
