@@ -1,8 +1,8 @@
-# Deploy only the static marketing site at the repo root.
+# Deploy the static marketing site (repo root) + the console SPA (served at /web/).
 # Everything below is backend / tooling and is excluded from the Vercel build,
 # so Vercel sees no package.json and serves the site as pure static (no build step).
 functions/
-web/
+web/server.mjs
 mcp/
 migrations/
 scripts/

@@ -10,7 +10,7 @@
   const wait = (ms) => new Promise((r) => setTimeout(r, ms));
 
   /* ---- CTA links → console ---- */
-  const CONSOLE_URL = 'http://localhost:8123'; // ← change to your deployed console
+  const CONSOLE_URL = 'https://anchor-delta-ten.vercel.app/web'; // deployed console SPA (web/ served at /web/)
   const CTA = { signup: CONSOLE_URL + '/#/signup', login: CONSOLE_URL + '/#/login' };
   document.querySelectorAll('[data-cta]').forEach((a) => { const d = CTA[a.getAttribute('data-cta')]; if (d) a.href = d; });
 
